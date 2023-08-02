@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ejemplo de Go y HTML</title>
+</head>
+<body>
+    <h1>Presiona el botón para obtener "hola" en el input:</h1>
+    <input type="text" id="resultado" readonly>
+    <button id="saludarBtn">Obtener Hola</button>
+
+    <h1>Enviar contenido del input al servidor:</h1>
+    <form id="miFormulario">
+        <input type="text" id="inputTexto" name="texto" placeholder="Escribe algo...">
+        <button type="button" onclick="enviarContenido()">Enviar al servidor</button>
+    </form>
+    <!-- Incluye el archivo JavaScript -->
+    <script src="AppFunctions.js"></script>
+</body>
+</html>
