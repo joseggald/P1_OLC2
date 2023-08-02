@@ -1,19 +1,107 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Ejemplo de Go y HTML</title>
-</head>
-<body>
-    <h1>Presiona el botón para obtener "hola" en el input:</h1>
-    <input type="text" id="resultado" readonly>
-    <button id="saludarBtn">Obtener Hola</button>
 
-    <h1>Enviar contenido del input al servidor:</h1>
-    <form id="miFormulario">
-        <input type="text" id="inputTexto" name="texto" placeholder="Escribe algo...">
-        <button type="button" onclick="enviarContenido()">Enviar al servidor</button>
-    </form>
-    <!-- Incluye el archivo JavaScript -->
+<head>
+    <title>OLC2 T-Swift</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <style>
+        body {
+            font-family: "Roboto Mono", monospace;
+        }
+        #console {
+            height: 565px;
+            width: 600px;
+            resize: none;
+            background-color: #1e1e1e;
+            color: #f8f8f2;
+            border: 1px solid #444;
+            padding: 10px;
+            font-family: "Roboto Mono", monospace;
+        }
+        .code-editor-container {
+            width: 550px;
+            height: 565px;
+            resize: both;
+            overflow: auto;
+        }
+        #code-editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+            font-family: "Roboto Mono", monospace;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/javascript/javascript.min.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">T-Swift IDE</a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="archivoDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Archivo
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="archivoDropdown">
+                        <a class="dropdown-item" href="#" id="abrir">Abrir</a>
+                        <a class="dropdown-item" href="#" id="guardar">Guardar</a>
+                        <a class="dropdown-item" href="#" id="guardarComo">Guardar como</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="reportesDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Reportes
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="reportesDropdown">
+                        <a class="dropdown-item" href="#" id="abrir">Arbol CST</a>
+                        <a class="dropdown-item" href="#" id="guardar">Errores</a>
+                        <a class="dropdown-item" href="#" id="guardarComo">Tabla de Símbolos</a>
+                    </div>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Acerca De...</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-6">
+                <button id="btnCompilar" class="btn btn-primary" type="button" onclick="compilarData()">Ejecutar</button>
+                <button id="btnLimpiar" class="btn btn-danger">Limpiar</button>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Editor de código:</h4>
+                <div class="code-editor-container">
+                    <textarea id="code-editor"></textarea>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h4>Consola:</h4>
+                <textarea id="console" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+
+    
     <script src="AppFunctions.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>

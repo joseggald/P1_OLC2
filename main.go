@@ -6,15 +6,12 @@ import (
 	"encoding/json"
 )
 
-func saludarHandler(w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("hola"))
-}
 
 type Mensaje struct {
 	Contenido string `json:"contenido"`
 }
 
-func recibirHandler(w http.ResponseWriter, r *http.Request) {
+func compilarHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var mensaje Mensaje
 		err := json.NewDecoder(r.Body).Decode(&mensaje)
@@ -39,9 +36,8 @@ func recibirHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    http.HandleFunc("/saludar", saludarHandler)
-    http.HandleFunc("/recibir", recibirHandler) // Nuevo manejador para recibir el contenido POST
-    http.Handle("/", http.FileServer(http.Dir("."))) // Servir archivos estáticos desde la carpeta actual
+	http.HandleFunc("/compilar", compilarHandler) // Nuevo manejador para recibir el contenido POST
+	http.Handle("/", http.FileServer(http.Dir("."))) // Servir archivos estáticos desde la carpeta actual
 	fmt.Println("Servidor Activo")
-    http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":3030", nil)
 }
