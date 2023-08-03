@@ -1,11 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"encoding/json"
 )
-
 
 type Mensaje struct {
 	Contenido string `json:"contenido"`
@@ -24,7 +23,7 @@ func compilarHandler(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
 		contenido := mensaje.Contenido
-		fmt.Printf("Contenido recibido del cliente: %s\n", contenido)
+		fmt.Println(contenido)
 
 		// Aquí puedes realizar alguna acción con el contenido recibido, si lo deseas.
 
@@ -36,8 +35,10 @@ func compilarHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/compilar", compilarHandler) // Nuevo manejador para recibir el contenido POST
+	http.HandleFunc("/compilar", compilarHandler)    // Nuevo manejador para recibir el contenido POST
 	http.Handle("/", http.FileServer(http.Dir("."))) // Servir archivos estáticos desde la carpeta actual
-	fmt.Println("Servidor Activo")
+	fmt.Println("Servidor Activo - http://localhost:3030/")
+	fmt.Println("-|-|-|-|P1 OLC2|-|-|-|-")
 	http.ListenAndServe(":3030", nil)
 }
+

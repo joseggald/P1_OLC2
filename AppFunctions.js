@@ -1,4 +1,14 @@
 var codeMirrorInstance
+var consoleTextArea = document.getElementById("console");
+
+
+function limpiarEditorYConsola() {
+    // Restablecer el contenido del editor de código
+    codeMirrorInstance.setValue('');
+
+    // Restablecer el contenido de la consola
+    consoleTextArea.value = '';
+}
 
 function compilarData() {
     const contenido = codeMirrorInstance.getValue();
@@ -13,6 +23,7 @@ function compilarData() {
     .then(response => response.text())
     .then(data => {
         console.log('Respuesta del servidor:', data);
+        consoleTextArea.value = data
     })
     .catch(error => console.error('Error:', error));
 }

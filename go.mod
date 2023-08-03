@@ -1,4 +1,4 @@
-module P1_OLC2
+module modulo
 
 go 1.20
 
