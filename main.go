@@ -3,9 +3,26 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	componentes "modulo/componentes"
+	parser "modulo/parser"
 	"net/http"
+	"github.com/antlr4-go/antlr/v4"
 )
 
+func Compilar(salida string) string {
+	inputStream := antlr.NewInputStream(salida)
+	lexer := parser.NewSwiftLanLexer(inputStream)
+	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
+	p := parser.NewSwiftLanParser(tokens)
+	p.AddErrorListener(antlr.NewDiagnosticErrorListener(false))
+	tree := p.Inicio()
+	var visitor parser.SwiftLanVisitor = componentes.NewEvalVisitor()
+	visitor.Visit(tree)
+	salidaF:=componentes.OutData()
+	return salidaF
+}
+
+// Area del Servidor
 type Mensaje struct {
 	Contenido string `json:"contenido"`
 }
@@ -18,17 +35,11 @@ func compilarHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error al leer el cuerpo de la solicitud JSON", http.StatusInternalServerError)
 			return
 		}
-
-		// Cierra el cuerpo de la solicitud para liberar recursos
 		defer r.Body.Close()
-
 		contenido := mensaje.Contenido
-		fmt.Println(contenido)
+		sal:=Compilar(contenido)
+		w.Write([]byte(sal))
 
-		// Aquí puedes realizar alguna acción con el contenido recibido, si lo deseas.
-
-		// Responder al cliente que se recibió el contenido correctamente
-		w.Write([]byte("Contenido recibido correctamente"))
 	} else {
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
@@ -41,4 +52,3 @@ func main() {
 	fmt.Println("-|-|-|-|P1 OLC2|-|-|-|-")
 	http.ListenAndServe(":3030", nil)
 }
-
