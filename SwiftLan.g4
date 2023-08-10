@@ -6,41 +6,91 @@ sentencias: (statement)*;
 
 statement:
 	asignacion
-	| llamadaPrint;
-
-asignacion: Declarar Id '=' expression;
-
-llamadaPrint:
-	Print '(' expression? ')'	# printLlamadaPrint
+	| funcstmt
+	| fPrint
+	| ifstmt
+	| retStmt
 ;
 
+callFuncstmt: Id '(' exprListCallFunc ')' # FuncionCallFunc
+;
+
+funcstmt: FUNC Id '(' exprListFunc ')' '->' tiposAsign '{' sentencias'}' # FuncionDeclaFunc
+	| FUNC Id '(' exprListFunc ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
+;
+
+sentenciasFunc: (statement)*
+;
+
+ifstmt: IF '(' expression ')' '{' sentencias '}' (elseifstmt)? (elsestmt)?	# funcionIf
+;
+
+elseif:(elseifstmt)* 			# funcionElseIfCont
+;
+
+elseifstmt: ELSE IF '(' expression ')' '{' sentencias '}' # funcionElseIf
+;
+
+elsestmt:ELSE '{' sentencias '}' # funcionElse
+;
+
+retStmt: RETURN expression # FuncionReturnVal
+;
+
+asignacion: 
+	Var Id '=' expression 	# funcionAsigExp
+	| Var Id ':' tiposAsign '=' expression # funcionAsigTipoExp
+	| Var Id ':' tiposAsign '?' # funcionAsigTipoNil
+;
+
+tiposAsign:
+	IntDecla
+	| FloatDecla
+	| StringDecla
+	| BoolDecla
+	| CharDecla
+;
+
+fPrint:
+	Print '(' expression? ')'	# funcionPrint
+;
+
+
+exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
+exprListCallFunc: Id ':' expression ( ',' Id ':' expression )*;
+
 expression:
-	'-' expression											# unaryMinusExpression
-	| <assoc = right> expression '^' expression				# powerExpression
-	| expression op = ('*' | '/' | '%') expression			# multExpression
-	| expression op = ('+' | '-') expression				# addExpression
-	| expression op = ('>=' | '<=' | '>' | '<') expression	# compExpression
-	| expression op = ('==' | '!=') expression				# eqExpression
-	| expression '&&' expression							# andExpression
-	| expression '||' expression							# orExpression
-	| expression '?' expression ':' expression				# ternaryExpression
+	'-' expression											# funcionUnariaExp
+	| <assoc = right> expression '^' expression				# funcionPowExp
+	| expression op = ('*' | '/' | '%') expression			# expressionMultDivMod
+	| expression op = ('+' | '-') expression				# expressionSumRes
+	| expression op = ('>=' | '<=' | '>' | '<') expression	# funcionCompExp
+	| expression op = ('==' | '!=') expression				# funcionEqExp
+	| expression '&&' expression							# funcionAndExp
+	| expression '||' expression							# funcionOrExp
+	| expression '?' expression ':' expression				# funcionTernaryExp
 	| Number												# numberExpression
 	| BoolVal													# boolExpression
-	| llamadaPrint									# llamadaFuncionExpression
-	| Id indexes?									# idExpression
-	| String											# stringExpression
-	| '(' expression ')'									# expressionExpression;
+	| Id									# idExpression
+	| String											# stringExpression									
+	| '(' expression ')'									# expressionExpression
+	| callFuncstmt									#exprCalFunc
+;
 
 indexes: ( '[' expression ']')+;
 
 //Reservadas
-Declarar:'var';
+Var:'var';
 Print: 'print';
 IntDecla: 'Int';
 FloatDecla: 'Float';
 BoolDecla: 'Bool';
 StringDecla: 'String';
 CharDecla: 'Character'; 
+IF:'if';
+FUNC:'func';
+RETURN:'return';
+ELSE:'else';
 
 //Valores
 BoolVal: 'true' | 'false';
@@ -62,8 +112,8 @@ NotEquals: '!=';
 MayQEquals: '>=';
 MinQEquals: '<=';
 Power: '^';
-Add: '+';
-Minus: '-';
+Suma: '+';
+Resta: '-';
 Mult: '*';
 Div: '/';
 Mod: '%';

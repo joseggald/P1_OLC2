@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	componentes "modulo/componentes"
 	parser "modulo/parser"
+	"modulo/swiftVisitor"
 	"net/http"
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -16,9 +16,9 @@ func Compilar(salida string) string {
 	p := parser.NewSwiftLanParser(tokens)
 	p.AddErrorListener(antlr.NewDiagnosticErrorListener(false))
 	tree := p.Inicio()
-	var visitor parser.SwiftLanVisitor = componentes.NewEvalVisitor()
+	var visitor parser.SwiftLanVisitor = swiftVisitor.NewVisitorEvalue()
 	visitor.Visit(tree)
-	salidaF:=componentes.OutData()
+	salidaF := swiftVisitor.OutData()
 	return salidaF
 }
 
@@ -37,7 +37,7 @@ func compilarHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer r.Body.Close()
 		contenido := mensaje.Contenido
-		sal:=Compilar(contenido)
+		sal := Compilar(contenido)
 		w.Write([]byte(sal))
 
 	} else {
