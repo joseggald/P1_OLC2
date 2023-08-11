@@ -10,14 +10,30 @@ statement:
 	| fPrint
 	| ifstmt
 	| retStmt
+	| callFuncstmt
+	| forstmt
+	| switchstmt
+	| whilestmt
+;
+
+forstmt: FOR Id 'in' expression '{' sentencias'}' # FuncionForstmt
+;
+
+whilestmt: WHILE expression '{' sentencias'}' # FuncionWhilestmt
+;
+
+switchstmt: SWITCH expression '{' bloqueCase '}' 
+;
+
+bloqueCase:
 ;
 
 callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
 | Id '(' (exprListCallFunc2)? ')' # FuncionCallFunc2
 ;
 
-funcstmt: FUNC Id '(' (exprListFunc)? ')' '->' tiposAsign '{' sentenciasFunc'}' # FuncionDeclaFunc
-	| FUNC Id '(' (exprListFunc)? ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
+funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentenciasFunc'}' # FuncionDeclaFunc
+	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
 ;
 
 sentenciasFunc: (statement)*
@@ -59,6 +75,7 @@ fPrint:
 
 
 exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
+exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
 exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
 exprListCallFunc2: expression ( ',' Id ':' expression )*;
 
@@ -94,6 +111,10 @@ IF:'if';
 FUNC:'func';
 RETURN:'return';
 ELSE:'else';
+FOR: 'for';
+WHILE: 'while';
+SWITCH: 'switch';
+CASE: 'case';
 
 //Valores
 BoolVal: 'true' | 'false';

@@ -18,6 +18,7 @@ type VisitorEvalue struct {
 	globalScope  *Scope
 	currentScope *Scope
 	returnValue  interface{}
+	returnVoid 	bool
 }
 
 func OutData() string {
@@ -61,9 +62,11 @@ func (e *VisitorEvalue) VisitSentencias(ctx *parser.SentenciasContext) interface
 	fmt.Printf("Entro - Sentencias\n")
 	for _, StamentsCtx := range ctx.AllStatement() {
 		e.Visit(StamentsCtx)
-		if e.returnValue != nil {
+		if e.returnValue != nil && !e.returnVoid{
 			fmt.Println(e.returnValue)
 			return e.returnValue
+		}else if e.returnVoid{
+			return RETURNVOID
 		}
 	}
 	return VOID
@@ -125,11 +128,12 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 				typ:        typ,
 			})
 		}
+	}else{
+		params=nil
 	}
 
 	body := ctx.SentenciasFunc()
-
-	function := NewFunction(params, body, nil, VOID.String())
+	function := NewFunction(params, body, nil, "")
 	e.currentScope.DeclareFunction(functionName, function)
 	fmt.Printf("En FuncionFuncDec2 - Nombre Variable: %v Valor: %v\n", functionName, function.params)
 	return VOID
@@ -163,6 +167,11 @@ func (e *VisitorEvalue) VisitFuncionReturnVal(ctx *parser.FuncionReturnValContex
 	return a // Visit the expression node and return its value
 }
 
+func (e *VisitorEvalue) VisituncionReturnVoid(ctx *parser.FuncionReturnVoidContext) interface{} {
+	e.returnVoid=true
+	return RETURNVOID // Visit the expression node and return its value
+}
+
 func (e *VisitorEvalue) VisitExprCalFunc(ctx *parser.ExprCalFuncContext) interface{} {
 	a := e.Visit(ctx.CallFuncstmt())
 	return a.(*SwiftValue) // Visit the expression node and return its value
@@ -179,7 +188,7 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 				args = append(args, argValue)
 			}
 			// Llamar a la función y obtener el valor de retorno
-			
+			ret := function.invoke(e.currentScope, args)
 			fmt.Println("FUNCION")
 			fmt.Println(ret)
 			return ret.(*SwiftValue)
@@ -187,6 +196,15 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 			args=nil
 			ret := function.invoke(e.currentScope, args)
 			fmt.Println(ret)
+			res:=ret
+			if (ret==nil){
+				ret=RETURNVOID
+				e.returnValue = ret
+				res=e.returnValue
+			}else{
+				res=ret.(*SwiftValue) 
+			}
+			return res
 		}
 	} else {
 		fmt.Printf("Function not found: %v\n", functionName)
