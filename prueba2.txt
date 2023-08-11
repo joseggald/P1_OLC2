@@ -1,0 +1,13 @@
+func ackermann(m1 m: Int, n1 n: Int) -> Int {
+    if (m == 0) {
+        return n + 1
+    } else if (n == 0) {
+        return ackermann(m1:m - 1, n1:1)
+    } else {
+        return ackermann(m1:m - 1, n1:ackermann(m1:m, n1:n - 1))
+    }
+}
+
+var ackResult = ackermann(m1:3, n1:4)
+print("Hola soy ackermann")
+print(ackResult)

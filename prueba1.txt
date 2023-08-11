@@ -1,0 +1,16 @@
+func ola(a b: Int,x c:Int) -> Int {
+    if b==3 {
+        return b  // Llamada recursiva con b incrementado
+    }
+  	if b==5 {
+      	if c==20{
+          	return b+c+ola(a:3,x:10) // Llamada recursiva con b incrementado
+        }else{
+        	return c+b
+        }
+    }
+  	return 0
+}
+print(ola(a:3,x:10)) 
+print(ola(a:5,x:10)) 
+print(ola(a:5,x:20))

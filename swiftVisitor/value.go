@@ -8,6 +8,7 @@ import (
 var VOID = &SwiftValue{}
 var NULL = &SwiftValue{}
 var INVALID = &SwiftValue{}
+var RETURNVOID = &SwiftValue{}
 
 type SwiftValue struct {
 	value interface{}

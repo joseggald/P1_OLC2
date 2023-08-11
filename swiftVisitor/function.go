@@ -14,13 +14,15 @@ type Function struct {
 	params    []*Param
 	body      antlr.ParserRuleContext
 	valReturn *SwiftValue
+	tipo	string
 }
 
-func NewFunction(params []*Param, body antlr.ParserRuleContext, valReturn *SwiftValue) *Function {
+func NewFunction(params []*Param, body antlr.ParserRuleContext, valReturn *SwiftValue,tipo string) *Function {
 	return &Function{
 		params:    params,
 		body:      body,
 		valReturn: valReturn,
+		tipo:	tipo,
 	}
 }
 
@@ -28,9 +30,12 @@ func (f *Function) invoke(scope *Scope, args []*SwiftValue) interface{}{
 	childScope := scope.CreateChildScope()
 
 	// Declara las variables utilizando los nombres e tipos de los parámetros
-	for _, param := range f.params {
-		childScope.DeclareVariable(param.idInterior, &SwiftValue{value: nil})
+	if f.params != nil{
+		for _, param := range f.params {
+			childScope.DeclareVariable(param.idInterior, &SwiftValue{value: nil})
+		}
 	}
+	
 
 	// Asigna los valores de los argumentos a las variables
 	for i, arg := range args {

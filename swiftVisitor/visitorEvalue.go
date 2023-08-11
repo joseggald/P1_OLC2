@@ -83,6 +83,32 @@ func (e *VisitorEvalue) VisitStatement(ctx *parser.StatementContext) interface{}
 	return VOID
 
 }
+func (e *VisitorEvalue) VisitFuncionDeclaFunc(ctx *parser.FuncionDeclaFuncContext) interface{} {
+	functionName := ctx.Id().GetText()
+	fmt.Printf("Entro VisitFuncionDeclaFunc\n")
+	tipe := ctx.TiposAsign().GetText()
+	var params []*Param
+	if paramList := ctx.ExprListFunc(); paramList != nil {
+		for i := 0; i < len(paramList.AllId()); i += 2 {
+			idExterior := paramList.Id(i).GetText()
+			idInterior := paramList.Id(i + 1).GetText()
+			typ := paramList.TiposAsign(i / 2).GetText()
+			params = append(params, &Param{
+				idExterior: idExterior,
+				idInterior: idInterior,
+				typ:        typ,
+			})
+		}
+	}else{
+		params=nil
+	}
+
+	body := ctx.SentenciasFunc()
+	function := NewFunction(params, body, nil, tipe)
+	e.currentScope.DeclareFunction(functionName, function)
+	fmt.Printf("En FuncionFuncDec - Nombre Variable: %v Valor: %v\n", functionName, function.params)
+	return VOID
+}
 
 func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Context) interface{} {
 	functionName := ctx.Id().GetText()
@@ -103,9 +129,9 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 
 	body := ctx.SentenciasFunc()
 
-	function := NewFunction(params, body, nil)
+	function := NewFunction(params, body, nil, VOID.String())
 	e.currentScope.DeclareFunction(functionName, function)
-	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v Valor: %v\n", functionName, function.params)
+	fmt.Printf("En FuncionFuncDec2 - Nombre Variable: %v Valor: %v\n", functionName, function.params)
 	return VOID
 }
 
@@ -127,6 +153,12 @@ func (e *VisitorEvalue) VisitSentenciasFunc(ctx *parser.SentenciasFuncContext) i
 func (e *VisitorEvalue) VisitFuncionReturnVal(ctx *parser.FuncionReturnValContext) interface{} {
 	a := e.Visit(ctx.Expression()).(*SwiftValue)
 	e.returnValue = a
+	fmt.Println("*******************")
+	fmt.Println(e.returnValue)
+	if (a==nil){
+		a=RETURNVOID
+		e.returnValue = a
+	}
 	fmt.Println(e.returnValue)
 	return a // Visit the expression node and return its value
 }
@@ -147,11 +179,14 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 				args = append(args, argValue)
 			}
 			// Llamar a la función y obtener el valor de retorno
-			ret:=function.invoke(e.currentScope, args)
+			
+			fmt.Println("FUNCION")
 			fmt.Println(ret)
-			return ret
+			return ret.(*SwiftValue)
 		} else {
-			fmt.Println("No arguments provided for function call.")
+			args=nil
+			ret := function.invoke(e.currentScope, args)
+			fmt.Println(ret)
 		}
 	} else {
 		fmt.Printf("Function not found: %v\n", functionName)
@@ -160,27 +195,66 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 	return NULL
 }
 
-func (e *VisitorEvalue) VisitFuncionIf(ctx *parser.FuncionIfContext) interface{} {
-	fmt.Printf("Entro VisitIf\n")
-	condition := e.Visit(ctx.Expression()).(*SwiftValue)
-	if condition.isBool() && condition.asBool() {
-		ifScope := e.currentScope.CreateChildScope()
-		e.currentScope = ifScope // Cambia al ámbito del if
-		defer func() {
-			e.currentScope = ifScope.parent // Restaura el ámbito anterior
-		}()
-		e.Visit(ctx.Sentencias())
-		if e.returnValue != nil {
-			fmt.Println(e.returnValue)
-			return e.returnValue
-		}
-	}
-	return VOID
+func (e *VisitorEvalue) VisitIfstmt(ctx *parser.IfstmtContext) interface{} {
+    fmt.Printf("Entro VisitIf\n")
+
+    // Evaluar la condición del if
+    condition := e.Visit(ctx.Ifstat().(*parser.IfstatContext).Expression()).(*SwiftValue)
+    if condition.isBool() && condition.asBool() {
+        ifScope := e.currentScope.CreateChildScope()
+        e.currentScope = ifScope
+        defer func() {
+            e.currentScope = ifScope.parent
+        }()
+        e.Visit(ctx.Ifstat().(*parser.IfstatContext).Sentencias())
+        if e.returnValue != nil {
+            return e.returnValue
+        }
+        return VOID
+    }
+
+    // Evaluar las condiciones de los else if
+    for _, elseIfStat := range ctx.AllElseifstmt() {
+        elseIfCondition := e.Visit(elseIfStat.(*parser.ElseifstmtContext).Expression()).(*SwiftValue)
+        if elseIfCondition.isBool() && elseIfCondition.asBool() {
+            elseIfScope := e.currentScope.CreateChildScope()
+            e.currentScope = elseIfScope
+            defer func() {
+                e.currentScope = elseIfScope.parent
+            }()
+            e.Visit(elseIfStat.(*parser.ElseifstmtContext).Sentencias())
+            if e.returnValue != nil {
+                return e.returnValue
+            }
+            return VOID
+        }
+    }
+
+    // Evaluar el bloque else si existe
+    if elseContext := ctx.Elsestmt(); elseContext != nil {
+        e.Visit(elseContext.Sentencias())
+        if e.returnValue != nil {
+            return e.returnValue
+        }
+    }
+
+    return VOID
 }
+
+
 
 func (e *VisitorEvalue) VisitFuncionAsigExp(ctx *parser.FuncionAsigExpContext) interface{} {
 	fmt.Printf("Entro FuncionAsigExp\n")
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
+	name := ctx.Id().GetText()
+	e.currentScope.DeclareVariable(name, newVal)
+	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v Valor: %v\n", name, newVal.value)
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitFuncionAsigTipoNil(ctx *parser.FuncionAsigTipoNilContext) interface{} {
+	fmt.Printf("Entro FuncionAsigExp\n")
+	newVal := NULL
 	name := ctx.Id().GetText()
 	e.currentScope.DeclareVariable(name, newVal)
 	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v Valor: %v\n", name, newVal.value)
@@ -400,4 +474,16 @@ func (e *VisitorEvalue) mayorIgualQue(left *SwiftValue, right *SwiftValue) inter
 		return &SwiftValue{left.asString() >= right.asString()}
 	}
 	return false
+}
+
+func (e *VisitorEvalue) VisitFuncionEqExp(ctx *parser.FuncionEqExpContext) interface{} {
+	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	switch ctx.GetOp().GetTokenType() {
+	case parser.SwiftLanLexerEquals:
+		return &SwiftValue{value: left.equals(right)}
+	case parser.SwiftLanLexerNotEquals:
+		return &SwiftValue{value: !left.equals(right)}
+	}
+	return NULL
 }

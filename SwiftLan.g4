@@ -12,29 +12,31 @@ statement:
 	| retStmt
 ;
 
-callFuncstmt: Id '(' exprListCallFunc ')' # FuncionCallFunc
+callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
+| Id '(' (exprListCallFunc2)? ')' # FuncionCallFunc2
 ;
 
-funcstmt: FUNC Id '(' exprListFunc ')' '->' tiposAsign '{' sentencias'}' # FuncionDeclaFunc
-	| FUNC Id '(' exprListFunc ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
+funcstmt: FUNC Id '(' (exprListFunc)? ')' '->' tiposAsign '{' sentenciasFunc'}' # FuncionDeclaFunc
+	| FUNC Id '(' (exprListFunc)? ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
 ;
 
 sentenciasFunc: (statement)*
 ;
 
-ifstmt: IF '(' expression ')' '{' sentencias '}' (elseifstmt)? (elsestmt)?	# funcionIf
+ifstmt: ifstat ((elseifstmt)*)? (elsestmt)?
 ;
 
-elseif:(elseifstmt)* 			# funcionElseIfCont
+ifstat: IF  expression  '{' sentencias '}' 
 ;
 
-elseifstmt: ELSE IF '(' expression ')' '{' sentencias '}' # funcionElseIf
+elseifstmt: ELSE IF  expression  '{' sentencias '}'
 ;
 
-elsestmt:ELSE '{' sentencias '}' # funcionElse
+elsestmt:ELSE '{' sentencias '}' 
 ;
 
 retStmt: RETURN expression # FuncionReturnVal
+| RETURN # FuncionReturnVoid
 ;
 
 asignacion: 
@@ -57,7 +59,8 @@ fPrint:
 
 
 exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
-exprListCallFunc: Id ':' expression ( ',' Id ':' expression )*;
+exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
+exprListCallFunc2: expression ( ',' Id ':' expression )*;
 
 expression:
 	'-' expression											# funcionUnariaExp
