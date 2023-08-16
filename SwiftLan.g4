@@ -9,30 +9,30 @@ statement:
 	| funcstmt
 	| fPrint
 	| ifstmt
-	| retStmt
 	| callFuncstmt
 	| forstmt
 	| switchstmt
 	| whilestmt
+	| retStmt
 ;
 
-forstmt: FOR Id 'in' expression '{' sentencias'}' # FuncionForstmt
+forstmt: FOR Id 'in' expression '{' sentencias (breakstmt|retStmt)? '}' # FuncionForstmt
 ;
 
-whilestmt: WHILE expression '{' sentencias'}' # FuncionWhilestmt
+whilestmt: WHILE expression '{' sentencias (breakstmt|retStmt)? '}' # FuncionWhilestmt
 ;
 
-switchstmt: SWITCH expression '{' bloqueCase '}' 
+switchstmt: SWITCH expression '{' (bloqueCase)* DEFAULT ':' (sentencias)? '}' # FuncionSwitchstmt
 ;
 
-bloqueCase:
+bloqueCase: CASE expression ':' (sentencias)?
 ;
 
 callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
 | Id '(' (exprListCallFunc2)? ')' # FuncionCallFunc2
 ;
 
-funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentenciasFunc'}' # FuncionDeclaFunc
+funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentenciasFunc '}' # FuncionDeclaFunc
 	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
 ;
 
@@ -42,19 +42,20 @@ sentenciasFunc: (statement)*
 ifstmt: ifstat ((elseifstmt)*)? (elsestmt)?
 ;
 
-ifstat: IF  expression  '{' sentencias '}' 
+ifstat: IF  expression  '{' sentencias (breakstmt|retStmt)?  '}' 
 ;
 
-elseifstmt: ELSE IF  expression  '{' sentencias '}'
+elseifstmt: ELSE IF  expression  '{' sentencias (breakstmt|retStmt)?  '}'
 ;
 
-elsestmt:ELSE '{' sentencias '}' 
+elsestmt:ELSE '{' sentencias (breakstmt|retStmt)? '}' 
 ;
 
 retStmt: RETURN expression # FuncionReturnVal
 | RETURN # FuncionReturnVoid
 ;
-
+breakstmt: BREAK # FuncionBreak
+;
 asignacion: 
 	Var Id '=' expression 	# funcionAsigExp
 	| Var Id ':' tiposAsign '=' expression # funcionAsigTipoExp
@@ -115,7 +116,8 @@ FOR: 'for';
 WHILE: 'while';
 SWITCH: 'switch';
 CASE: 'case';
-
+DEFAULT: 'default';
+BREAK:'break';
 //Valores
 BoolVal: 'true' | 'false';
 Number: Int ( '.' Digit*)?;
