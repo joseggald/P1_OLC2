@@ -32,6 +32,7 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue,tipo string,const
 			s.tipo=tipo
 			s.constante=constante
 			s.variables[name] = value
+			return
 		}else{
 			println("error de tipado")
 		}
@@ -41,6 +42,7 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue,tipo string,const
 			s.tipo=tipo
 			s.constante=constante
 			s.variables[name] = value
+			return
 		}else{
 			println("error de tipado")
 		}
@@ -50,6 +52,7 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue,tipo string,const
 			s.tipo=tipo
 			s.constante=constante
 			s.variables[name] = value
+			return
 		}else{
 			println("error de tipado")
 		}
@@ -59,6 +62,7 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue,tipo string,const
 			s.tipo=tipo
 			s.constante=constante
 			s.variables[name] = value
+			return
 		}else{
 			println("error de tipado")
 		}
@@ -71,17 +75,22 @@ func (s *Scope) DeclareVariableNil(name string, value *SwiftValue,tipo string,co
 	s.variables[name] = value
 }
 func (s *Scope) ReassignVariable(name string, value *SwiftValue,tipo string){
-	if _, exists := s.variables[name]; exists {
-		println(s.tipo)
-		println(tipo)
-		if tipo==s.tipo{
-			s.variables[name] = value
-		}else{
-			println("error de reasignación tipado")
+	if !s.constante{
+		if _, exists := s.variables[name]; exists {
+			println(s.tipo)
+			println(tipo)
+			if tipo==s.tipo{
+				s.variables[name] = value
+			}else{
+				println("error de reasignación tipado")
+			}
+		} else if s.parent != nil {
+			s.parent.ReassignVariable(name, value,tipo)
 		}
-	} else if s.parent != nil {
-		s.parent.ReassignVariable(name, value,tipo)
+	}else{
+		println("error es constante no puede reasignar")
 	}
+	
 }
 
 func (s *Scope) FindVariable(name string) *SwiftValue {

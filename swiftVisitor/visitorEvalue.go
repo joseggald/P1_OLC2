@@ -2,20 +2,20 @@ package swiftVisitor
 
 import (
 	"fmt"
+	"github.com/antlr4-go/antlr/v4"
 	"modulo/parser"
 	"reflect"
-	"github.com/antlr4-go/antlr/v4"
 )
 
 var out = ""
 
 type VisitorEvalue struct {
 	parser.BaseSwiftLanVisitor
-	globalScope  *Scope
-	currentScope *Scope
-	returnValue  interface{}
-	returnVoid 	bool
-	returnBreak 	bool
+	globalScope    *Scope
+	currentScope   *Scope
+	returnValue    interface{}
+	returnVoid     bool
+	returnBreak    bool
 	returnContinue bool
 }
 
@@ -59,14 +59,14 @@ func (e *VisitorEvalue) VisitSentencias(ctx *parser.SentenciasContext) interface
 	fmt.Printf("Entro - Sentencias\n")
 	for _, StamentsCtx := range ctx.AllStatement() {
 		e.Visit(StamentsCtx)
-		if e.returnValue != nil && !e.returnVoid{
+		if e.returnValue != nil{
 			fmt.Println(e.returnValue)
 			return e.returnValue
-		}else if e.returnVoid{
+		} else if e.returnVoid {
 			return RETURNVOID
-		}else if e.returnBreak{
+		} else if e.returnBreak {
 			return BREAK
-		}else if e.returnContinue{
+		} else if e.returnContinue {
 			return CONTINUE
 		}
 	}
@@ -87,13 +87,13 @@ func (e *VisitorEvalue) VisitStatement(ctx *parser.StatementContext) interface{}
 func (e *VisitorEvalue) VisitFuncionPrint(ctx *parser.FuncionPrintContext) interface{} {
 	fmt.Printf("Entro VisitPrint\n")
 	if expr := ctx.Expression(); expr != nil {
-		a:=e.Visit(expr).(*SwiftValue)
-		if a==NULL{
+		a := e.Visit(expr).(*SwiftValue)
+		if a == NULL {
 			out = out + "nil" + "\n"
-		}else{
+		} else {
 			out = out + a.String() + "\n"
 		}
-		
+
 	}
 	return VOID
 }

@@ -29,7 +29,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc(ctx *parser.FuncionDeclaFuncContex
 	} else {
 		params = nil
 	}
-	body := ctx.SentenciasFunc()
+	body := ctx.Sentencias()
 	function := NewFunction(params, body, nil, tipe)
 	e.currentScope.DeclareFunction(functionName, function)
 	fmt.Printf("En FuncionFuncDec - Nombre Variable: %v Valor: %v\n", functionName, function.params)
@@ -54,27 +54,10 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 	} else {
 		params = nil
 	}
-	body := ctx.SentenciasFunc()
+	body := ctx.Sentencias()
 	function := NewFunction(params, body, nil, "")
 	e.currentScope.DeclareFunction(functionName, function)
 	fmt.Printf("En FuncionFuncDec2 - Nombre Variable: %v Valor: %v\n", functionName, function.params)
-	return VOID
-}
-
-func (e *VisitorEvalue) VisitSentenciasFunc(ctx *parser.SentenciasFuncContext) interface{} {
-	fmt.Printf("Entro VisitSentenciasFunc\n")
-	for _, stmtCtx := range ctx.AllStatement() {
-		e.Visit(stmtCtx)
-		if e.returnValue != nil {
-			fmt.Println(e.returnValue)
-			return e.returnValue
-		} else if e.returnVoid {
-			return RETURNVOID
-		} else if e.returnBreak {
-			return BREAK
-		}
-	}
-
 	return VOID
 }
 

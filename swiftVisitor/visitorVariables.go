@@ -7,16 +7,22 @@ import (
 
 func (e *VisitorEvalue) VisitFuncionAsigExp(ctx *parser.FuncionAsigExpContext) interface{} {
 	fmt.Printf("Entro FuncionAsigExp\n")
+	c:=false
+	
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
 	name := ctx.Id().GetText()
+	cons:=ctx.TipoInit().GetText()
+	if cons=="let"{
+		c=true
+	}
 	if newVal.isInt(){
-		e.currentScope.DeclareVariable(name, newVal,"Int",false)
+		e.currentScope.DeclareVariable(name, newVal,"Int",c)
 	}else if newVal.isBool(){
-		e.currentScope.DeclareVariable(name, newVal,"Bool",false)
+		e.currentScope.DeclareVariable(name, newVal,"Bool",c)
 	}else if newVal.isString(){
-		e.currentScope.DeclareVariable(name, newVal,"String",false)
+		e.currentScope.DeclareVariable(name, newVal,"String",c)
 	}else if newVal.isNumber(){
-		e.currentScope.DeclareVariable(name, newVal,"Float",false)
+		e.currentScope.DeclareVariable(name, newVal,"Float",c)
 	}
 	
 	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v Valor: %v\n", name, newVal.value)
@@ -28,7 +34,12 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoNil(ctx *parser.FuncionAsigTipoNilCo
 	newVal := NULL
 	name := ctx.Id().GetText()
 	println(ctx.TiposAsign().GetText())
-	e.currentScope.DeclareVariableNil(name, newVal,ctx.TiposAsign().GetText(),false)
+	c:=false
+	cons:=ctx.TipoInit().GetText()
+	if cons=="let"{
+		c=true
+	}
+	e.currentScope.DeclareVariableNil(name, newVal,ctx.TiposAsign().GetText(),c)
 	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v \n", name)
 	
 	return VOID
@@ -39,33 +50,38 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpCo
 	valVar := e.Visit(ctx.Expression()).(*SwiftValue)
 	name := ctx.Id().GetText()
 	existe:=e.currentScope.FindVariable(name)
+	c:=false
+	cons:=ctx.TipoInit().GetText()
+	if cons=="let"{
+		c=true
+	}
 	if existe!=VOID{
 		fmt.Printf("Variable '%v' ya existe en el ámbito actual o en ámbitos padres.\n", name)
 	} else {
 		if valVar.isString() {
 			if ctx.TiposAsign().GetText() == "String" {
-				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),false)
+				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),c)
 				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
 			} else {
 				fmt.Println("Error")
 			}
 		} else if valVar.isInt() {
 			if ctx.TiposAsign().GetText() == "Int" {
-				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),false)
+				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),c)
 				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
 			} else {
 				fmt.Println("Error")
 			}
 		} else if valVar.isDouble() {
 			if ctx.TiposAsign().GetText() == "Float" {
-				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),false)
+				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),c)
 				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
 			} else {
 				fmt.Println("Error")
 			}
 		} else if valVar.isBool() {
 			if ctx.TiposAsign().GetText() == "Bool" {
-				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),false)
+				e.currentScope.DeclareVariable(name, valVar,ctx.TiposAsign().GetText(),c)
 				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
 			} else {
 				fmt.Println("Error")

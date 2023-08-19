@@ -7,6 +7,7 @@ sentencias: (statement)*;
 statement:
 	asignacion
 	| reasignacion
+	| vectorAsign
 	| funcstmt
 	| fPrint
 	| ifstmt
@@ -17,9 +18,18 @@ statement:
 	| retStmt
 	| breakstmt
 	| continuestmt
+	| mmstmt
 ;
+
+vectorAsign: tipoInit Id ':' '[' tiposAsign ']' '='
+;
+
 reasignacion: Id '=' expression # FuncionReasign
 ;
+
+mmstmt: expression op = ('+='|'-=') expression # FuncionMM
+;
+
 forstmt: FOR Id 'in' EnteroRange '{' sentencias '}' # FuncionForstmt
 ;
 
@@ -39,12 +49,10 @@ callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
 | Id '(' (exprListCallFunc2)? ')' # FuncionCallFunc2
 ;
 
-funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentenciasFunc '}' # FuncionDeclaFunc
-	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentenciasFunc '}' # FuncionDeclaFunc2
+funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentencias '}' # FuncionDeclaFunc
+	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentencias '}' # FuncionDeclaFunc2
 ;
 
-sentenciasFunc: (statement)*
-;
 
 ifstmt: ifstat ((elseifstmt)*)? (elsestmt)?
 ;
@@ -69,10 +77,13 @@ continuestmt: CONTINUE # FuncionContinue
 ;
 
 asignacion: 
-	Var Id '=' expression 	# funcionAsigExp
-	| Var Id ':' tiposAsign '=' expression # funcionAsigTipoExp
-	| Var Id ':' tiposAsign '?' # funcionAsigTipoNil
+	tipoInit Id '=' expression 	# funcionAsigExp
+	| tipoInit Id ':' tiposAsign '=' expression # funcionAsigTipoExp
+	| tipoInit Id ':' tiposAsign '?' # funcionAsigTipoNil
 ;
+
+tipoInit: Var |
+Let;
 
 tiposAsign:
 	IntDecla
@@ -116,6 +127,7 @@ indexes: ( '[' expression ']')+;
 
 //Reservadas
 Var:'var';
+Let:'let';
 Print: 'print';
 IntDecla: 'Int';
 FloatDecla: 'Float';
