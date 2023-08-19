@@ -12,6 +12,8 @@ var RETURNVOID = &SwiftValue{}
 var BREAK = &SwiftValue{}
 var ERROR = &SwiftValue{}
 var CONTINUE = &SwiftValue{}
+var VECTO = &SwiftValue{}
+
 type SwiftValue struct {
 	value interface{}
 }
@@ -47,6 +49,17 @@ func (v *SwiftValue) isString() bool {
 }
 
 func (v *SwiftValue) asString() string {
+	return v.value.(string)
+}
+func (v *SwiftValue) isChar() bool {
+	a:=false
+	if len(v.asString())>2{
+		a=true
+	}
+	return a
+}
+
+func (v *SwiftValue) asChar() string {
 	return v.value.(string)
 }
 

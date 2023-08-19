@@ -19,9 +19,24 @@ statement:
 	| breakstmt
 	| continuestmt
 	| mmstmt
+	| appendVec
+	| removeVec
+	| removeLastVec
+	| vecReasig
 ;
 
-vectorAsign: tipoInit Id ':' '[' tiposAsign ']' '='
+removeVec:Id '.' REMOVE '(' AT ':' expression')' # FuncionRemoveVec
+;
+vecReasig: Id '[' expression ']' # FuncionVecReasig
+;
+removeLastVec:Id '.' REMOVELAST '('')' # FuncionRemoveLastVec
+;
+
+appendVec: Id'.'APEND '('expression')' # FuncionAppendVector
+;
+
+vectorAsign: Var Id ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # FuncionVectorAsig
+	| Var Id ':' '[' tiposAsign ']' '=' Id # FuncionVectorAsigVar
 ;
 
 reasignacion: Id '=' expression # FuncionReasign
@@ -102,7 +117,7 @@ exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
 exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
 exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
 exprListCallFunc2: expression ( ',' Id ':' expression )*;
-
+exprVector: expression ( ',' expression )*;
 expression:
 	'-' expression											# funcionUnariaExp
 	| <assoc = right> expression '^' expression				# funcionPowExp
@@ -114,13 +129,16 @@ expression:
 	| expression '||' expression							# funcionOrExp
 	| expression '?' expression ':' expression				# funcionTernaryExp
 	| Nil													# nilExpression
-	| Float												# floatExpression
+	| Float													# floatExpression
 	| Entero												# enteroExpression
-	| BoolVal													# boolExpression
-	| Id									# idExpression
-	| String											# stringExpression								
+	| BoolVal												# boolExpression
+	| Id													# idExpression
+	| String												# stringExpression								
 	| '(' expression ')'									# expressionExpression
-	| callFuncstmt									#exprCalFunc
+	| callFuncstmt											# exprCalFunc
+	| Id '.' COUNT											# countExpression
+	| Id '.' 'IsEmpty'										# emptyVecExpression
+	| Id '[' expression ']'								 	# vecCallExpression
 ;
 
 indexes: ( '[' expression ']')+;
@@ -141,9 +159,14 @@ ELSE:'else';
 FOR: 'for';
 WHILE: 'while';
 SWITCH: 'switch';
+APEND:'append';
 CASE: 'case';
 DEFAULT: 'default';
 BREAK:'break';
+COUNT:'count';
+REMOVE:'remove';
+REMOVELAST:'removeLast';
+AT:'at';
 RANGE: '...';
 CONTINUE:'continue';
 //Valores

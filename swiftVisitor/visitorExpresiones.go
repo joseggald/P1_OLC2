@@ -19,6 +19,26 @@ func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) inter
 	return variable
 }
 
+func (e *VisitorEvalue) VisitCountExpression(ctx *parser.CountExpressionContext) interface{} {
+	id := ctx.Id().GetText()
+	cont := e.currentScope.FindVector(id)
+	tam:=len(cont)
+	return &SwiftValue{tam}
+}
+
+func (e *VisitorEvalue) VisitEmptyVecExpression(ctx *parser.EmptyVecExpressionContext) interface{} {
+	id := ctx.Id().GetText()
+	cont := e.currentScope.FindVector(id)
+	tam:=len(cont)
+	ret:=false
+	if tam<1{
+		ret=true
+	}else{
+		ret=false
+	}
+	return &SwiftValue{ret}
+}
+
 func (e *VisitorEvalue) VisitEnteroExpression(ctx *parser.EnteroExpressionContext) interface{} {
 	numero, _ := strconv.Atoi(ctx.GetText())
 	return &SwiftValue{numero}
