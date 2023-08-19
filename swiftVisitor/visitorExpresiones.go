@@ -12,17 +12,23 @@ import (
 func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) interface{} {
 	id := ctx.Id().GetText()
 	variable := e.currentScope.FindVariable(id)
-	if variable == nil {
+	if variable == VOID {
 		fmt.Printf("Error: Variable '%s' no definida.\n", id)
 		return INVALID
 	}
 	return variable
 }
 
-func (e *VisitorEvalue) VisitNumberExpression(ctx *parser.NumberExpressionContext) interface{} {
+func (e *VisitorEvalue) VisitEnteroExpression(ctx *parser.EnteroExpressionContext) interface{} {
+	numero, _ := strconv.Atoi(ctx.GetText())
+	return &SwiftValue{numero}
+}
+
+func (e *VisitorEvalue) VisitFloatExpression(ctx *parser.FloatExpressionContext) interface{} {
 	numero, _ := strconv.ParseFloat(ctx.GetText(), 64)
 	return &SwiftValue{numero}
 }
+
 
 func (e *VisitorEvalue) VisitBoolExpression(ctx *parser.BoolExpressionContext) interface{} {
 	valueBool := ctx.GetText() == "true"
@@ -33,6 +39,9 @@ func (e *VisitorEvalue) VisitStringExpression(ctx *parser.StringExpressionContex
 	texto := ctx.GetText()
 	texto = texto[1 : len(texto)-1]
 	return &SwiftValue{texto}
+}
+func (e *VisitorEvalue) VisitNilExpression(ctx *parser.NilExpressionContext) interface{} {
+	return NULL
 }
 
 func (e *VisitorEvalue) VisitExpressionSumRes(ctx *parser.ExpressionSumResContext) interface{} {

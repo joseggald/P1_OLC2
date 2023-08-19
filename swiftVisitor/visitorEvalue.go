@@ -66,6 +66,8 @@ func (e *VisitorEvalue) VisitSentencias(ctx *parser.SentenciasContext) interface
 			return RETURNVOID
 		}else if e.returnBreak{
 			return BREAK
+		}else if e.returnContinue{
+			return CONTINUE
 		}
 	}
 	return VOID
@@ -85,10 +87,13 @@ func (e *VisitorEvalue) VisitStatement(ctx *parser.StatementContext) interface{}
 func (e *VisitorEvalue) VisitFuncionPrint(ctx *parser.FuncionPrintContext) interface{} {
 	fmt.Printf("Entro VisitPrint\n")
 	if expr := ctx.Expression(); expr != nil {
-		fmt.Printf("%s\n", e.Visit(expr).(*SwiftValue).String())
-		out = out + e.Visit(expr).(*SwiftValue).String() + "\n"
-	} else {
-		fmt.Println()
+		a:=e.Visit(expr).(*SwiftValue)
+		if a==NULL{
+			out = out + "nil" + "\n"
+		}else{
+			out = out + a.String() + "\n"
+		}
+		
 	}
 	return VOID
 }

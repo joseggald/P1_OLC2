@@ -9,8 +9,9 @@ var VOID = &SwiftValue{}
 var NULL = &SwiftValue{}
 var INVALID = &SwiftValue{}
 var RETURNVOID = &SwiftValue{}
-var BREAK= &SwiftValue{}
-
+var BREAK = &SwiftValue{}
+var ERROR = &SwiftValue{}
+var CONTINUE = &SwiftValue{}
 type SwiftValue struct {
 	value interface{}
 }

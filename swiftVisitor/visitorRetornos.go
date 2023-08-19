@@ -27,4 +27,7 @@ func (e *VisitorEvalue) VisitFuncionReturnVoid(ctx *parser.FuncionReturnVoidCont
 	e.returnVoid=true
 	return RETURNVOID 
 }
-
+func (e *VisitorEvalue) VisitFuncionContinue(ctx *parser.FuncionContinueContext) interface{} {
+	e.returnContinue=true
+	return CONTINUE
+}

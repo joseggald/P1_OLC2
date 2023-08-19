@@ -1,20 +1,22 @@
 package swiftVisitor
 
 type Scope struct {
-	parent     *Scope
-	variables  map[string]*SwiftValue
-	functions  map[string]*Function
-	isFunction bool
-	returnValue  *SwiftValue 
+	parent      *Scope
+	variables   map[string]*SwiftValue
+	functions   map[string]*Function
+	isFunction  bool
+	constante bool
+	tipo string
 }
 
 func NewScope() *Scope {
 	return &Scope{
-		parent:     &Scope{},
-		variables:  map[string]*SwiftValue{},
-		functions:  map[string]*Function{},
-		isFunction: false,
-		returnValue:  &SwiftValue{},
+		parent:      &Scope{},
+		variables:   map[string]*SwiftValue{},
+		functions:   map[string]*Function{},
+		isFunction:  false,
+		constante: false,
+		tipo: "",
 	}
 }
 
@@ -24,8 +26,62 @@ func (s *Scope) CreateChildScope() *Scope {
 	return childScope
 }
 
-func (s *Scope) DeclareVariable(name string, value *SwiftValue) {
+func (s *Scope) DeclareVariable(name string, value *SwiftValue,tipo string,constante bool) {
+	if value.isInt(){
+		if tipo=="Int"{
+			s.tipo=tipo
+			s.constante=constante
+			s.variables[name] = value
+		}else{
+			println("error de tipado")
+		}
+	}
+	if value.isBool(){
+		if tipo=="Bool"{
+			s.tipo=tipo
+			s.constante=constante
+			s.variables[name] = value
+		}else{
+			println("error de tipado")
+		}
+	}
+	if value.isNumber(){
+		if tipo=="Float"{
+			s.tipo=tipo
+			s.constante=constante
+			s.variables[name] = value
+		}else{
+			println("error de tipado")
+		}
+	}
+	if value.isString(){
+		if tipo=="String"{
+			s.tipo=tipo
+			s.constante=constante
+			s.variables[name] = value
+		}else{
+			println("error de tipado")
+		}
+	}
+	println(s.tipo)
+}
+func (s *Scope) DeclareVariableNil(name string, value *SwiftValue,tipo string,constante bool) {
+	s.tipo=tipo
+	s.constante=constante
 	s.variables[name] = value
+}
+func (s *Scope) ReassignVariable(name string, value *SwiftValue,tipo string){
+	if _, exists := s.variables[name]; exists {
+		println(s.tipo)
+		println(tipo)
+		if tipo==s.tipo{
+			s.variables[name] = value
+		}else{
+			println("error de reasignación tipado")
+		}
+	} else if s.parent != nil {
+		s.parent.ReassignVariable(name, value,tipo)
+	}
 }
 
 func (s *Scope) FindVariable(name string) *SwiftValue {
@@ -35,7 +91,7 @@ func (s *Scope) FindVariable(name string) *SwiftValue {
 	} else if s.parent != nil {
 		return s.parent.FindVariable(name)
 	}
-	return nil
+	return VOID
 }
 
 func (s *Scope) DeclareFunction(name string, value *Function) {
@@ -50,12 +106,4 @@ func (s *Scope) FindFunction(name string) *Function {
 		return s.parent.FindFunction(name)
 	}
 	return nil
-}
-
-func (s *Scope) SetReturnValue(value *SwiftValue) {
-	s.returnValue = value
-}
-
-func (s *Scope) GetReturnValue() *SwiftValue {
-	return s.returnValue
 }

@@ -63,7 +63,6 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 
 func (e *VisitorEvalue) VisitSentenciasFunc(ctx *parser.SentenciasFuncContext) interface{} {
 	fmt.Printf("Entro VisitSentenciasFunc\n")
-
 	for _, stmtCtx := range ctx.AllStatement() {
 		e.Visit(stmtCtx)
 		if e.returnValue != nil {
@@ -90,8 +89,6 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 				args = append(args, argValue)
 			}
 			ret := function.invoke(e.currentScope, args)
-			fmt.Println("FUNCION")
-			fmt.Println(ret)
 			return ret.(*SwiftValue)
 		} else {
 			args = nil
@@ -108,7 +105,7 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 			return res
 		}
 	} else {
-		fmt.Printf("Function not found: %v\n", functionName)
+		fmt.Printf("La Función no existe: %v\n", functionName)
 	}
 
 	return NULL

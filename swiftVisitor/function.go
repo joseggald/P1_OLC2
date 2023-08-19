@@ -28,24 +28,13 @@ func NewFunction(params []*Param, body antlr.ParserRuleContext, valReturn *Swift
 
 func (f *Function) invoke(scope *Scope, args []*SwiftValue) interface{}{
 	childScope := scope.CreateChildScope()
-
-	// Declara las variables utilizando los nombres e tipos de los parámetros
-	if f.params != nil{
-		for _, param := range f.params {
-			childScope.DeclareVariable(param.idInterior, &SwiftValue{value: nil})
-		}
-	}
 	
 
 	// Asigna los valores de los argumentos a las variables
 	for i, arg := range args {
-		childScope.DeclareVariable(f.params[i].idInterior, arg)
+		childScope.DeclareVariable(f.params[i].idInterior, arg,f.tipo,false)
 	}
 
-	// Configura el valor de retorno en el ámbito hijo antes de la visita al cuerpo
-	childScope.SetReturnValue(f.valReturn)
-	f.valReturn=childScope.GetReturnValue()
-	// Realiza la visita al cuerpo de la función
 	evalVisitor := &VisitorEvalue{currentScope: childScope, globalScope: scope}
 	evalVisitor.Visit(f.body)
 	vala:=evalVisitor.returnValue

@@ -6,6 +6,7 @@ sentencias: (statement)*;
 
 statement:
 	asignacion
+	| reasignacion
 	| funcstmt
 	| fPrint
 	| ifstmt
@@ -14,12 +15,18 @@ statement:
 	| switchstmt
 	| whilestmt
 	| retStmt
+	| breakstmt
+	| continuestmt
+;
+reasignacion: Id '=' expression # FuncionReasign
+;
+forstmt: FOR Id 'in' EnteroRange '{' sentencias '}' # FuncionForstmt
 ;
 
-forstmt: FOR Id 'in' expression '{' sentencias (breakstmt|retStmt)? '}' # FuncionForstmt
+EnteroRange: Entero RANGE Entero
 ;
 
-whilestmt: WHILE expression '{' sentencias (breakstmt|retStmt)? '}' # FuncionWhilestmt
+whilestmt: WHILE expression '{' sentencias '}' # FuncionWhilestmt
 ;
 
 switchstmt: SWITCH expression '{' (bloqueCase)* DEFAULT ':' (sentencias)? '}' # FuncionSwitchstmt
@@ -54,8 +61,13 @@ elsestmt:ELSE '{' sentencias (breakstmt|retStmt)? '}'
 retStmt: RETURN expression # FuncionReturnVal
 | RETURN # FuncionReturnVoid
 ;
+
 breakstmt: BREAK # FuncionBreak
 ;
+
+continuestmt: CONTINUE # FuncionContinue
+;
+
 asignacion: 
 	Var Id '=' expression 	# funcionAsigExp
 	| Var Id ':' tiposAsign '=' expression # funcionAsigTipoExp
@@ -90,10 +102,12 @@ expression:
 	| expression '&&' expression							# funcionAndExp
 	| expression '||' expression							# funcionOrExp
 	| expression '?' expression ':' expression				# funcionTernaryExp
-	| Number												# numberExpression
+	| Nil													# nilExpression
+	| Float												# floatExpression
+	| Entero												# enteroExpression
 	| BoolVal													# boolExpression
 	| Id									# idExpression
-	| String											# stringExpression									
+	| String											# stringExpression								
 	| '(' expression ')'									# expressionExpression
 	| callFuncstmt									#exprCalFunc
 ;
@@ -118,9 +132,13 @@ SWITCH: 'switch';
 CASE: 'case';
 DEFAULT: 'default';
 BREAK:'break';
+RANGE: '...';
+CONTINUE:'continue';
 //Valores
 BoolVal: 'true' | 'false';
-Number: Int ( '.' Digit*)?;
+Float: [0-9]+ '.' Digit*;
+Entero: [0-9]+;
+Nil:'nil';
 Id: [a-zA-Z] [a-zA-Z_0-9]*;
 String:
 	["] (~["\r\n\\] | '\\' ~[\r\n])* ["]
@@ -150,4 +168,3 @@ MenorQue: '<';
 Space: [ \t\r\n\u000C] -> skip;
 COMMENT : '/*' .*? '*/' -> skip;
 LINE_COMMENT : '//' ~[\r\n]* -> skip;
-
