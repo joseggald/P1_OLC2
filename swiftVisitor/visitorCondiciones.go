@@ -53,3 +53,35 @@ func (e *VisitorEvalue) VisitIfstmt(ctx *parser.IfstmtContext) interface{} {
 
     return VOID
 }
+
+func (e *VisitorEvalue) VisitGuardstmt(ctx *parser.GuardstmtContext) interface{} {
+    fmt.Printf("Entro VisitGuard\n")
+    
+    condition := e.Visit(ctx.Expression()).(*SwiftValue)
+    if condition.isBool(){
+        if condition.asBool(){
+            fmt.Println("Guard condition not met")
+            return VOID
+        }  
+    }
+    
+    guardScope := e.currentScope.CreateChildScope()
+    e.currentScope = guardScope
+    defer func() {
+        e.currentScope = guardScope.parent
+    }()
+    
+    e.Visit(ctx.Sentencias())
+    
+    if e.returnValue != nil {
+        return e.returnValue
+    } else if e.returnVoid {
+        return RETURNVOID
+    } else if e.returnBreak {
+        return BREAK
+    } else if e.returnContinue {
+        return CONTINUE
+    }
+    
+    return VOID
+}
