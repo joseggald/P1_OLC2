@@ -144,12 +144,10 @@ func (e *VisitorEvalue) VisitFuncionForIdstmt(ctx *parser.FuncionForIdstmtContex
 	var end int
 	if e.currentScope.FindVector(dataEnd) != nil {
 		a := e.currentScope.FindVector(dataEnd)
-		fmt.Println(a)
-		end = len(a) - 1
+		end = len(a.datos) - 1
 		tipo := e.currentScope.FindTypeVector(dataEnd)
-		
 		for i := start; i <= end; i++ {
-			loopVarValue := &SwiftValue{value: a[i]}
+			loopVarValue := a.datos[i]
 			if i==0{
 				forScope.DeclareVariable(id, loopVarValue, tipo, false)
 			}else{

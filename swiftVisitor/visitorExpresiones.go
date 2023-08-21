@@ -22,14 +22,14 @@ func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) inter
 func (e *VisitorEvalue) VisitCountExpression(ctx *parser.CountExpressionContext) interface{} {
 	id := ctx.Id().GetText()
 	cont := e.currentScope.FindVector(id)
-	tam:=len(cont)
+	tam:=len(cont.datos)
 	return &SwiftValue{tam}
 }
 
 func (e *VisitorEvalue) VisitEmptyVecExpression(ctx *parser.EmptyVecExpressionContext) interface{} {
 	id := ctx.Id().GetText()
 	cont := e.currentScope.FindVector(id)
-	tam:=len(cont)
+	tam:=len(cont.datos)
 	ret:=false
 	if tam<1{
 		ret=true

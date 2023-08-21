@@ -27,6 +27,15 @@ statement:
 	| decremento
 ;
 
+defStruct: STRUCT Id '{' atributosLista '}'
+;
+
+atributosLista:	op=(Let|Var) Id (:tiposAsign)?
+;
+
+dupla:
+;
+
 incremento: Id '+''=' expression # FuncionIncremento
 ;
 
@@ -168,6 +177,7 @@ StringDecla: 'String';
 CharDecla: 'Character'; 
 IF:'if';
 FUNC:'func';
+STRUCT:'struct';
 RETURN:'return';
 ELSE:'else';
 FOR: 'for';

@@ -5,26 +5,26 @@ import (
 )
 
 type Scope struct {
-	parent     *Scope
-	variables  map[string]*SwiftValue
-	functions  map[string]*Function
-	contenido  []interface{}
-	isVector   bool
-	isFunction bool
-	constante  bool
-	tipo       string
+	parent             *Scope
+	variables          map[string]*SwiftValue
+	variablesAtributos map[string]*AtributoVariable
+	functions          map[string]*Function
+	vectores           map[string]*Vector
+	isVector           bool
+	isFunction         bool
+	constante          bool
 }
 
 func NewScope() *Scope {
 	return &Scope{
-		parent:     &Scope{},
-		variables:  map[string]*SwiftValue{},
-		functions:  map[string]*Function{},
-		isFunction: false,
-		isVector: false,
-		contenido:  make([]interface{}, 0),
-		constante:  false,
-		tipo:       "",
+		parent:             &Scope{},
+		variables:          map[string]*SwiftValue{},
+		variablesAtributos: map[string]*AtributoVariable{},
+		functions:          map[string]*Function{},
+		vectores:           map[string]*Vector{},
+		isFunction:         false,
+		isVector:           false,
+		constante:          false,
 	}
 }
 
@@ -37,9 +37,8 @@ func (s *Scope) CreateChildScope() *Scope {
 func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, constante bool) {
 	if value.isInt() {
 		if tipo == "Int" {
-			s.tipo = tipo
-			s.constante = constante
 			s.variables[name] = value
+			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
 			return
 		} else {
 			println("error de tipado")
@@ -47,9 +46,8 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, con
 	}
 	if value.isBool() {
 		if tipo == "Bool" {
-			s.tipo = tipo
-			s.constante = constante
 			s.variables[name] = value
+			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
 			return
 		} else {
 			println("error de tipado")
@@ -57,9 +55,8 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, con
 	}
 	if value.isNumber() {
 		if tipo == "Float" {
-			s.tipo = tipo
-			s.constante = constante
 			s.variables[name] = value
+			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
 			return
 		} else {
 			println("error de tipado")
@@ -67,9 +64,8 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, con
 	}
 	if value.isString() {
 		if tipo == "String" {
-			s.tipo = tipo
-			s.constante = constante
 			s.variables[name] = value
+			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
 			return
 		} else {
 			println("error de tipado")
@@ -77,31 +73,29 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, con
 	}
 	if value.isChar() {
 		if tipo == "Char" {
-			s.tipo = tipo
-			s.constante = constante
 			s.variables[name] = value
+			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
 			return
 		} else {
 			println("error de tipado")
 		}
 	}
-	println(s.tipo)
 }
 func (s *Scope) DeclareVariableNil(name string, value *SwiftValue, tipo string, constante bool) {
-	s.tipo = tipo
 	s.constante = constante
 	s.variables[name] = value
-	
+
 }
 
 func (s *Scope) ReassignVariable(name string, value *SwiftValue, tipo string) {
-	if !s.constante {
+	varValue := s.variablesAtributos[name]
+	if !varValue.constante {
 		if _, exists := s.variables[name]; exists {
-			if tipo == s.tipo {
+			if tipo == varValue.tipo {
 				s.variables[name] = value
-			}else if tipo=="Int" && s.tipo=="Float"{
+			} else if tipo == "Int" && varValue.tipo == "Float" {
 				s.variables[name] = value
-			}else {
+			} else {
 				println("error de reasignación tipado")
 			}
 		} else if s.parent != nil {
@@ -113,19 +107,16 @@ func (s *Scope) ReassignVariable(name string, value *SwiftValue, tipo string) {
 
 }
 
-func (s *Scope) DeclareVector(name string, value *SwiftValue, tipo string, contenido []interface{}) {
-	s.tipo = tipo
-	s.constante = false
-	s.variables[name] = value
-	s.contenido = contenido
-	s.isVector=true
-	fmt.Println(contenido)
+func (s *Scope) DeclareVector(name string, contenido *Vector) {
+	s.vectores[name] = contenido
+	s.isVector = true
+	println(contenido.datos)
 }
 
-func (s *Scope) FindVector(name string) []interface{} {
-	_, exists := s.variables[name]
+func (s *Scope) FindVector(name string) *Vector {
+	vectorValue, exists := s.vectores[name]
 	if exists {
-		return s.contenido
+		return vectorValue
 	} else if s.parent != nil {
 		return s.parent.FindVector(name)
 	}
@@ -133,62 +124,52 @@ func (s *Scope) FindVector(name string) []interface{} {
 }
 
 func (s *Scope) FindTypeVector(name string) string {
-	_, exists := s.variables[name]
+	cont, exists := s.vectores[name]
 	if exists {
-		return s.tipo
+		return cont.tipo
 	} else if s.parent != nil {
 		return s.parent.FindTypeVector(name)
 	}
 	return "nil"
 }
 
-
-
-func (s *Scope) AddVector(name string, dato interface{},tipo string){
-	_, exists := s.variables[name]
+func (s *Scope) AddVector(name string, dato *SwiftValue, tipo string) {
+	cont, exists := s.vectores[name]
 	if exists {
-		if s.isVector{
-			if s.tipo==tipo{
-				s.contenido = append(s.contenido, dato)
-				fmt.Println(s.contenido)
-			}else{
+		if s.isVector {
+			if cont.tipo == tipo {
+				cont.apendVec(dato)
+			} else {
 				fmt.Println("error no es el mismo tipo del vector")
 			}
-		}else{
+		} else {
 			fmt.Println("error no es vector")
 		}
 
 	} else if s.parent != nil {
-		s.parent.AddVector(name,dato,tipo)
+		s.parent.AddVector(name, dato, tipo)
 	}
 }
 
-func (s *Scope) DelVector(name string, pos int){
-	_, exists := s.variables[name]
+func (s *Scope) DelVector(name string, pos int) {
+	cont, exists := s.vectores[name]
 	if exists {
-		if s.isVector{
-			indexToRemove := pos
-			if indexToRemove >= 0 && indexToRemove < len(s.contenido) {
-				// Crear un nuevo slice que excluya el elemento en la posición indexToRemove
-				s.contenido = append(s.contenido[:indexToRemove], s.contenido[indexToRemove+1:]...)
-				fmt.Println("Slice después de eliminar:", s.contenido)
-			} else {
-				fmt.Println("Índice inválido para eliminación")
-			}
-
+		if s.isVector {
+			cont.RemoveAt(pos)
 		}
 	} else if s.parent != nil {
-		s.parent.DelVector(name,pos)
+		s.parent.DelVector(name, pos)
 	}
 }
-func (s *Scope) ReasignVector(name string, pos int,value interface{}){
-	_, exists := s.variables[name]
+
+func (s *Scope) ReasignVector(name string, pos int, value *SwiftValue) {
+	cont, exists := s.vectores[name]
 	if exists {
-		if s.isVector{
-			s.contenido[pos]=value
+		if s.isVector {
+			cont.datos[pos] = value
 		}
 	} else if s.parent != nil {
-		s.parent.DelVector(name,pos)
+		s.parent.ReasignVector(name, pos, value)
 	}
 }
 func (s *Scope) FindVariable(name string) *SwiftValue {

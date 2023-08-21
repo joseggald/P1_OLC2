@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"modulo/parser"
 	"strconv"
-	"strings"
 )
 
 func (e *VisitorEvalue) VisitFuncionVectorAsig(ctx *parser.FuncionVectorAsigContext) interface{} {
@@ -12,36 +11,15 @@ func (e *VisitorEvalue) VisitFuncionVectorAsig(ctx *parser.FuncionVectorAsigCont
 	name := ctx.Id().GetText()
 	vecs := ctx.ExprVector()
 	tipo := ctx.TiposAsign().GetText()
-	vectores := []interface{}{}
+	var vectores []*SwiftValue
 	if vecs != nil {
-		for i := 0; i < len(vecs.AllExpression()); i += 1 {
-			dato := vecs.Expression(i).GetText()
-			a:=getValueType(dato)
-			if a==tipo{
-				if tipo=="Int"{
-					datoInt,_:=strconv.Atoi(dato)
-					vectores = append(vectores, datoInt)
-				}else if tipo=="String"{
-					datoStr:=strings.Trim(dato, "\"")
-					vectores = append(vectores, datoStr)
-				}else if tipo=="Bool"{
-					datoBool,_:= strconv.ParseBool(dato)
-					vectores = append(vectores, datoBool)
-				}else if tipo=="Char"{
-					datoStr:=strings.Trim(dato, "\"")
-					vectores = append(vectores, datoStr)
-				}else if tipo=="Float"{
-					datoFloat,_:=strconv.ParseFloat(dato, 64)
-					vectores = append(vectores, datoFloat)
-				}
-			}else{
-				fmt.Println("ERROR DE VECTORES")
-				return VOID
-			}
-			
+		for _, expr := range ctx.ExprVector().AllExpression() {
+			argValue := e.Visit(expr).(*SwiftValue)
+			vectores = append(vectores, argValue)
 		}
 	}
-	e.currentScope.DeclareVector(name, VECTO, tipo, vectores)
+	nuevoVector:=NewVector(vectores,tipo)
+	e.currentScope.DeclareVector(name,nuevoVector)
 	return VOID
 }
 
@@ -52,7 +30,7 @@ func (e *VisitorEvalue) VisitFuncionRemoveVec(ctx *parser.FuncionRemoveVecContex
 	if cont!=nil{
 		datoInt:= pos.asInt()
 		fmt.Println(datoInt)
-		if len(cont)>datoInt{
+		if len(cont.datos)>datoInt{
 			e.currentScope.DelVector(id,datoInt)
 		}
 	}else{
@@ -67,15 +45,15 @@ func (e *VisitorEvalue) VisitFuncionAppendVector(ctx *parser.FuncionAppendVector
 	val := e.Visit(ctx.Expression()).(*SwiftValue)
 	if cont!=nil{
 		if val.isInt() {
-			e.currentScope.AddVector(id,val.asInt(),"Int")
+			e.currentScope.AddVector(id,val,"Int")
 		}else if val.isDouble() {
-			e.currentScope.AddVector(id,val.asDouble(),"Float")
+			e.currentScope.AddVector(id,val,"Float")
 		}else if val.isString() {
-			e.currentScope.AddVector(id,val.asString(),"String")
+			e.currentScope.AddVector(id,val,"String")
 		}else if val.isBool() {
-			e.currentScope.AddVector(id,val.asBool(),"Bool")
+			e.currentScope.AddVector(id,val,"Bool")
 		}else if val.isChar() {
-			e.currentScope.AddVector(id,val.asChar(),"Char")
+			e.currentScope.AddVector(id,val,"Char")
 		}
 	}else{
 		fmt.Println("Error posicion no encontrada en el vector")
@@ -86,9 +64,8 @@ func (e *VisitorEvalue) VisitFuncionAppendVector(ctx *parser.FuncionAppendVector
 func (e *VisitorEvalue) VisitFuncionRemoveLastVec(ctx *parser.FuncionRemoveLastVecContext) interface{}{
 	id := ctx.Id().GetText()
 	cont := e.currentScope.FindVector(id)
-
 	if cont!=nil{
-		e.currentScope.DelVector(id,len(cont)-1)
+		e.currentScope.DelVector(id,len(cont.datos)-1)
 	}else{
 		fmt.Println("Error no hay datos en el vector")
 	}
@@ -104,7 +81,7 @@ func (e *VisitorEvalue) VisitFuncionVectorAsigVar(ctx *parser.FuncionVectorAsigV
 	if vectores!=nil{
 		tipo2:=e.currentScope.FindTypeVector(name2)
 		if tipo2==tipo{
-			e.currentScope.DeclareVector(name, VECTO, tipo, vectores)
+			e.currentScope.DeclareVector(name,vectores)
 		}else{
 			fmt.Println("NO COINCIDEN LOS TIPOS DE VECTOR")
 		}
@@ -120,12 +97,13 @@ func (e *VisitorEvalue) VisitVecCallExpression(ctx *parser.VecCallExpressionCont
 	var dato interface{}
 	if cont!=nil{
 		datoInt:= pos.asInt()
-		dato=cont[datoInt]
+		dato=cont.datos[datoInt]
 	}else{
 		fmt.Println("Error no hay datos en el vector")
 	}
-	return &SwiftValue{dato}
+	return dato
 }
+
 
 func (e *VisitorEvalue) VisitFuncionVecReasig(ctx *parser.FuncionVecReasigContext) interface{} {
 	fmt.Printf("Enter - Vector Expression Statement\n")
@@ -139,23 +117,7 @@ func (e *VisitorEvalue) VisitFuncionVecReasig(ctx *parser.FuncionVecReasigContex
 		tipo:=e.currentScope.FindTypeVector(id)
 		if getValueType(dataReasig.String())==tipo{
 			datoInt:= pos.asInt()
-			if dataReasig.isInt() {
-				dato:=dataReasig.asInt()
-				e.currentScope.ReasignVector(id,datoInt,dato)
-			}else if dataReasig.isDouble() {
-				dato:=dataReasig.asDouble()
-				e.currentScope.ReasignVector(id,datoInt,dato)
-			}else if dataReasig.isString() {
-				dato:=dataReasig.asString()
-				e.currentScope.ReasignVector(id,datoInt,dato)
-			}else if dataReasig.isBool() {
-				dato:=dataReasig.asBool()
-				e.currentScope.ReasignVector(id,datoInt,dato)
-			}else if dataReasig.isChar() {
-				dato:=dataReasig.asChar()
-				e.currentScope.ReasignVector(id,datoInt,dato)
-			}
-			
+			e.currentScope.ReasignVector(id,datoInt,dataReasig)
 		}else{
 			fmt.Println("Error no es del mismo tipo del vector")
 		}	

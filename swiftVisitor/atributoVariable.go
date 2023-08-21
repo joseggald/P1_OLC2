@@ -1,0 +1,15 @@
+package swiftVisitor
+
+type AtributoVariable struct {
+	dato *SwiftValue
+	tipo   string
+	constante bool
+}
+
+func NewAtributoVariable(value *SwiftValue,tipo string,constante bool) *AtributoVariable {
+	return &AtributoVariable {
+		dato: value,
+		tipo:	tipo,
+		constante: constante,
+	}
+}
