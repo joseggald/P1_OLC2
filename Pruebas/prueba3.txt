@@ -18,3 +18,12 @@ print("***********")
 for i in 0...2{
 	print(a[i])
 }
+print("***********")
+var letras:[String] = ["O", "L", "C", "2"]
+// for que recorre un arreglo unidimensional
+for letra in letras {
+    print(letra)
+}
+for c in " Se Va Ganar!" {
+    print(c)
+}

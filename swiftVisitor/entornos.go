@@ -75,6 +75,16 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, con
 			println("error de tipado")
 		}
 	}
+	if value.isChar() {
+		if tipo == "Char" {
+			s.tipo = tipo
+			s.constante = constante
+			s.variables[name] = value
+			return
+		} else {
+			println("error de tipado")
+		}
+	}
 	println(s.tipo)
 }
 func (s *Scope) DeclareVariableNil(name string, value *SwiftValue, tipo string, constante bool) {
@@ -87,11 +97,11 @@ func (s *Scope) DeclareVariableNil(name string, value *SwiftValue, tipo string, 
 func (s *Scope) ReassignVariable(name string, value *SwiftValue, tipo string) {
 	if !s.constante {
 		if _, exists := s.variables[name]; exists {
-			println(s.tipo)
-			println(tipo)
 			if tipo == s.tipo {
 				s.variables[name] = value
-			} else {
+			}else if tipo=="Int" && s.tipo=="Float"{
+				s.variables[name] = value
+			}else {
 				println("error de reasignación tipado")
 			}
 		} else if s.parent != nil {

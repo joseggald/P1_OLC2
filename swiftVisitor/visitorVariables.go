@@ -5,6 +5,60 @@ import (
 	"modulo/parser"
 )
 
+func (e *VisitorEvalue) VisitFuncionIncremento(ctx *parser.FuncionIncrementoContext) interface{} {
+	fmt.Printf("Entro FuncionIncremento\n")
+	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
+	name := ctx.Id().GetText()
+	a:=e.currentScope.FindVariable(name)
+	if a!=VOID{
+		if newVal.isInt(){
+			suma:=newVal.asInt()
+			suma=suma+a.asInt()
+			e.currentScope.ReassignVariable(name,&SwiftValue{suma},"Int")
+		}else if newVal.isString(){
+			suma:=newVal.asString()
+			suma=suma+a.asString()
+			e.currentScope.ReassignVariable(name,&SwiftValue{suma},"String")
+		}else if newVal.isDouble(){
+			suma:=newVal.asDouble()
+			suma=suma+a.asDouble()
+			e.currentScope.ReassignVariable(name,&SwiftValue{suma},"Float")
+		}else if newVal.isBool(){
+			println("error bool")
+		}
+	}else if e.currentScope.FindVariable(name)== nil{
+		println("error no existe variable")
+	}
+	fmt.Printf("En FuncionIncremento - Nombre Variable: %v Valor: %v\n", name, newVal.value)
+	
+	return VOID
+}
+func (e *VisitorEvalue) VisitFuncionDecremento(ctx *parser.FuncionDecrementoContext) interface{} {
+	fmt.Printf("Entro FuncionIncremento\n")
+	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
+	name := ctx.Id().GetText()
+	a:=e.currentScope.FindVariable(name)
+	if a!=VOID{
+		if newVal.isInt(){
+			suma:=newVal.asInt()
+			suma=suma-a.asInt()
+			e.currentScope.ReassignVariable(name,&SwiftValue{suma},"Int")
+		}else if newVal.isString(){
+			println("error string")
+		}else if newVal.isDouble(){
+			suma:=newVal.asDouble()
+			suma=suma-a.asDouble()
+			e.currentScope.ReassignVariable(name,&SwiftValue{suma},"Float")
+		}else if newVal.isBool(){
+			println("error bool")
+		}
+	}else if e.currentScope.FindVariable(name)== nil{
+		println("error no existe variable")
+	}
+	fmt.Printf("En FuncionIncremento - Nombre Variable: %v Valor: %v\n", name, newVal.value)
+	
+	return VOID
+}
 func (e *VisitorEvalue) VisitFuncionAsigExp(ctx *parser.FuncionAsigExpContext) interface{} {
 	fmt.Printf("Entro FuncionAsigExp\n")
 	c:=false
@@ -106,7 +160,7 @@ func (e *VisitorEvalue) VisitFuncionReasign(ctx *parser.FuncionReasignContext) i
 			e.currentScope.ReassignVariable(name,newVal,"String")
 		}else if newVal.isDouble(){
 			e.currentScope.ReassignVariable(name,newVal,"Float")
-		}else if newVal.isDouble(){
+		}else if newVal.isBool(){
 			e.currentScope.ReassignVariable(name,newVal,"Bool")
 		}
 		

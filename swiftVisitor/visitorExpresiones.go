@@ -93,11 +93,25 @@ func (e *VisitorEvalue) VisitExpressionMultDivMod(ctx *parser.ExpressionMultDivM
 }
 
 func (e *VisitorEvalue) suma(left *SwiftValue, right *SwiftValue) interface{} {
-	if left.isNumber() && right.isNumber() {
+	var er=true
+	if left.isDouble() && right.isDouble(){
+		er=false
 		return &SwiftValue{left.asDouble() + right.asDouble()}
 	}
+	if left.isInt() && right.isInt(){
+		er=false
+		return &SwiftValue{left.asInt() + right.asInt() }
+	}
+	if left.isDouble() && right.isInt(){
+		er=false
+		return &SwiftValue{left.asDouble() + right.asDouble() }
+	}
 	if left.isString() && right.isString() {
+		er=false
 		return &SwiftValue{left.asString() + right.asString()}
+	}
+	if er{
+		fmt.Println("Error de operación suma")
 	}
 	return NULL
 }
@@ -126,9 +140,15 @@ func (e *VisitorEvalue) div(left *SwiftValue, right *SwiftValue) interface{} {
 }
 
 func (e *VisitorEvalue) mod(left *SwiftValue, right *SwiftValue) interface{} {
-	a := int(left.asDouble())
-	b := int(right.asDouble())
-	return &SwiftValue{a % b}
+	var er=true
+	if left.isInt() && right.isInt(){
+		er=false
+		return &SwiftValue{left.asInt() % right.asInt() }
+	}
+	if er{
+		fmt.Println("Error de operación mod")
+	}
+	return NULL
 }
 
 func (e *VisitorEvalue) VisitFuncionUnariaExp(ctx *parser.FuncionUnariaExpContext) interface{} {

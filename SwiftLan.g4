@@ -18,11 +18,19 @@ statement:
 	| retStmt
 	| breakstmt
 	| continuestmt
-	| mmstmt
 	| appendVec
 	| removeVec
 	| removeLastVec
 	| vecReasig
+	| guardstmt
+	| incremento
+	| decremento
+;
+
+incremento: Id '+''=' expression # FuncionIncremento
+;
+
+decremento: Id '-''=' expression # FuncionDecremento
 ;
 
 removeVec:Id '.' REMOVE '(' AT ':' expression')' # FuncionRemoveVec
@@ -44,12 +52,12 @@ vectorAsign: Var Id ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # FuncionVe
 reasignacion: Id '=' expression # FuncionReasign
 ;
 
-mmstmt: expression op = ('+='|'-=') expression # FuncionMM
-;
-
 forstmt: FOR Id 'in' EnteroRange '{' sentencias '}' # FuncionForstmt
 | FOR Id 'in' String '{' sentencias '}' # FuncionForExpstmt
 |  FOR Id 'in' Id '{' sentencias '}' # FuncionForIdstmt
+;
+
+guardstmt: GUARD expression ELSE '{' sentencias '}'
 ;
 
 EnteroRange: (Entero|Id) RANGE (Entero|Id)
@@ -169,6 +177,7 @@ APEND:'append';
 CASE: 'case';
 DEFAULT: 'default';
 BREAK:'break';
+GUARD:'guard';
 COUNT:'count';
 REMOVE:'remove';
 REMOVELAST:'removeLast';
