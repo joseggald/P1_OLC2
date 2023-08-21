@@ -1,0 +1,20 @@
+var a:[Int]=[1,2,3,4]
+for i in 0...3{
+	print(a[i])
+}
+print("***********")
+a[0]=a[3]
+for i in 0...3{
+	print(a[i])
+}
+print("***********")
+print(a.count)
+print(a.IsEmpty)
+a.removeLast()
+a.remove(at:0)
+a.append(8)
+print(a.count)
+print("***********")
+for i in 0...2{
+	print(a[i])
+}

@@ -29,7 +29,6 @@ func NewFunction(params []*Param, body antlr.ParserRuleContext, valReturn *Swift
 func (f *Function) invoke(scope *Scope, args []*SwiftValue) interface{}{
 	childScope := scope.CreateChildScope()
 	
-
 	// Asigna los valores de los argumentos a las variables
 	for i, arg := range args {
 		childScope.DeclareVariable(f.params[i].idInterior, arg,f.tipo,false)

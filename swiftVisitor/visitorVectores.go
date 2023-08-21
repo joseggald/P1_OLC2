@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"modulo/parser"
 	"strconv"
+	"strings"
 )
 
 func (e *VisitorEvalue) VisitFuncionVectorAsig(ctx *parser.FuncionVectorAsigContext) interface{} {
@@ -21,18 +22,18 @@ func (e *VisitorEvalue) VisitFuncionVectorAsig(ctx *parser.FuncionVectorAsigCont
 					datoInt,_:=strconv.Atoi(dato)
 					vectores = append(vectores, datoInt)
 				}else if tipo=="String"{
-					
-					vectores = append(vectores, dato)
+					datoStr:=strings.Trim(dato, "\"")
+					vectores = append(vectores, datoStr)
 				}else if tipo=="Bool"{
 					datoBool,_:= strconv.ParseBool(dato)
 					vectores = append(vectores, datoBool)
 				}else if tipo=="Char"{
-					vectores = append(vectores, dato)
+					datoStr:=strings.Trim(dato, "\"")
+					vectores = append(vectores, datoStr)
 				}else if tipo=="Float"{
 					datoFloat,_:=strconv.ParseFloat(dato, 64)
 					vectores = append(vectores, datoFloat)
 				}
-				
 			}else{
 				fmt.Println("ERROR DE VECTORES")
 				return VOID
@@ -59,6 +60,7 @@ func (e *VisitorEvalue) VisitFuncionRemoveVec(ctx *parser.FuncionRemoveVecContex
 	}
 	return VOID
 }
+
 func (e *VisitorEvalue) VisitFuncionAppendVector(ctx *parser.FuncionAppendVectorContext) interface{}{
 	id := ctx.Id().GetText()
 	cont := e.currentScope.FindVector(id)
@@ -80,6 +82,7 @@ func (e *VisitorEvalue) VisitFuncionAppendVector(ctx *parser.FuncionAppendVector
 	}
 	return VOID
 }
+
 func (e *VisitorEvalue) VisitFuncionRemoveLastVec(ctx *parser.FuncionRemoveLastVecContext) interface{}{
 	id := ctx.Id().GetText()
 	cont := e.currentScope.FindVector(id)
@@ -109,6 +112,58 @@ func (e *VisitorEvalue) VisitFuncionVectorAsigVar(ctx *parser.FuncionVectorAsigV
 	return VOID
 }
 
+func (e *VisitorEvalue) VisitVecCallExpression(ctx *parser.VecCallExpressionContext) interface{} {
+	fmt.Printf("Enter - Vector Expression Statement\n")
+	id := ctx.Id().GetText()
+	cont := e.currentScope.FindVector(id)
+	pos := e.Visit(ctx.Expression()).(*SwiftValue)
+	var dato interface{}
+	if cont!=nil{
+		datoInt:= pos.asInt()
+		dato=cont[datoInt]
+	}else{
+		fmt.Println("Error no hay datos en el vector")
+	}
+	return &SwiftValue{dato}
+}
+
+func (e *VisitorEvalue) VisitFuncionVecReasig(ctx *parser.FuncionVecReasigContext) interface{} {
+	fmt.Printf("Enter - Vector Expression Statement\n")
+	id := ctx.Id().GetText()
+	cont := e.currentScope.FindVector(id)
+	pos := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	dataReasig := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	
+	var dato interface{}
+	if cont!=nil{
+		tipo:=e.currentScope.FindTypeVector(id)
+		if getValueType(dataReasig.String())==tipo{
+			datoInt:= pos.asInt()
+			if dataReasig.isInt() {
+				dato:=dataReasig.asInt()
+				e.currentScope.ReasignVector(id,datoInt,dato)
+			}else if dataReasig.isDouble() {
+				dato:=dataReasig.asDouble()
+				e.currentScope.ReasignVector(id,datoInt,dato)
+			}else if dataReasig.isString() {
+				dato:=dataReasig.asString()
+				e.currentScope.ReasignVector(id,datoInt,dato)
+			}else if dataReasig.isBool() {
+				dato:=dataReasig.asBool()
+				e.currentScope.ReasignVector(id,datoInt,dato)
+			}else if dataReasig.isChar() {
+				dato:=dataReasig.asChar()
+				e.currentScope.ReasignVector(id,datoInt,dato)
+			}
+			
+		}else{
+			fmt.Println("Error no es del mismo tipo del vector")
+		}	
+	}else{
+		fmt.Println("Error no hay datos en el vector")
+	}
+	return &SwiftValue{dato}
+}
 
 func getValueType(value string) string {
 	// Intentar convertir a int

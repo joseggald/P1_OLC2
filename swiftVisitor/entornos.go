@@ -132,6 +132,8 @@ func (s *Scope) FindTypeVector(name string) string {
 	return "nil"
 }
 
+
+
 func (s *Scope) AddVector(name string, dato interface{},tipo string){
 	_, exists := s.variables[name]
 	if exists {
@@ -159,7 +161,6 @@ func (s *Scope) DelVector(name string, pos int){
 			if indexToRemove >= 0 && indexToRemove < len(s.contenido) {
 				// Crear un nuevo slice que excluya el elemento en la posición indexToRemove
 				s.contenido = append(s.contenido[:indexToRemove], s.contenido[indexToRemove+1:]...)
-
 				fmt.Println("Slice después de eliminar:", s.contenido)
 			} else {
 				fmt.Println("Índice inválido para eliminación")
@@ -170,7 +171,16 @@ func (s *Scope) DelVector(name string, pos int){
 		s.parent.DelVector(name,pos)
 	}
 }
-
+func (s *Scope) ReasignVector(name string, pos int,value interface{}){
+	_, exists := s.variables[name]
+	if exists {
+		if s.isVector{
+			s.contenido[pos]=value
+		}
+	} else if s.parent != nil {
+		s.parent.DelVector(name,pos)
+	}
+}
 func (s *Scope) FindVariable(name string) *SwiftValue {
 	val, exists := s.variables[name]
 	if exists {

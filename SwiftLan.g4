@@ -27,8 +27,10 @@ statement:
 
 removeVec:Id '.' REMOVE '(' AT ':' expression')' # FuncionRemoveVec
 ;
-vecReasig: Id '[' expression ']' # FuncionVecReasig
+
+vecReasig: Id '[' expression ']' '=' expression # FuncionVecReasig
 ;
+
 removeLastVec:Id '.' REMOVELAST '('')' # FuncionRemoveLastVec
 ;
 
@@ -46,9 +48,11 @@ mmstmt: expression op = ('+='|'-=') expression # FuncionMM
 ;
 
 forstmt: FOR Id 'in' EnteroRange '{' sentencias '}' # FuncionForstmt
+| FOR Id 'in' String '{' sentencias '}' # FuncionForExpstmt
+|  FOR Id 'in' Id '{' sentencias '}' # FuncionForIdstmt
 ;
 
-EnteroRange: Entero RANGE Entero
+EnteroRange: (Entero|Id) RANGE (Entero|Id)
 ;
 
 whilestmt: WHILE expression '{' sentencias '}' # FuncionWhilestmt
@@ -115,8 +119,10 @@ fPrint:
 
 exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
 exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
+
 exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
 exprListCallFunc2: expression ( ',' Id ':' expression )*;
+
 exprVector: expression ( ',' expression )*;
 expression:
 	'-' expression											# funcionUnariaExp
