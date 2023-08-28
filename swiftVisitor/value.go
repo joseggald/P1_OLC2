@@ -59,10 +59,6 @@ func (v *SwiftValue) isChar() bool {
 	return a
 }
 
-func (v *SwiftValue) asChar() string {
-	return v.value.(string)
-}
-
 func (v *SwiftValue) isBool() bool {
 	return reflect.TypeOf(v.value).Kind() == reflect.Bool
 }

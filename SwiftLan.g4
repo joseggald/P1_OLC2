@@ -25,6 +25,11 @@ statement:
 	| guardstmt
 	| incremento
 	| decremento
+	| matrizAsign
+;
+
+matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrix ']' # FuncionAsignarMatrizNormal
+|	Var Id ':' '[' '[''['  tiposAsign ']' ']' ']' '=' '[' ('['exprListMatrix']')* ']' # FuncionAsignarMatriz3D
 ;
 
 defStruct: STRUCT Id '{' atributosLista '}'
@@ -136,7 +141,7 @@ fPrint:
 
 exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
 exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
-
+exprListMatrix: '[' exprVector ']' (',' '[' exprVector ']')* # exprListMatrix;
 exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
 exprListCallFunc2: expression ( ',' Id ':' expression )*;
 

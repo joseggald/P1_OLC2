@@ -10,9 +10,8 @@ type Scope struct {
 	variablesAtributos map[string]*AtributoVariable
 	functions          map[string]*Function
 	vectores           map[string]*Vector
-	isVector           bool
-	isFunction         bool
-	constante          bool
+	matrices           map[string]*Matrix
+	matrices3D         map[string]*Matrix3D
 }
 
 func NewScope() *Scope {
@@ -22,9 +21,8 @@ func NewScope() *Scope {
 		variablesAtributos: map[string]*AtributoVariable{},
 		functions:          map[string]*Function{},
 		vectores:           map[string]*Vector{},
-		isFunction:         false,
-		isVector:           false,
-		constante:          false,
+		matrices:           map[string]*Matrix{},
+		matrices3D:         map[string]*Matrix3D{},
 	}
 }
 
@@ -82,9 +80,13 @@ func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, con
 	}
 }
 func (s *Scope) DeclareVariableNil(name string, value *SwiftValue, tipo string, constante bool) {
-	s.constante = constante
-	s.variables[name] = value
-
+	_, exists := s.variables[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.variables[name] = value
+		s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
+	}
 }
 
 func (s *Scope) ReassignVariable(name string, value *SwiftValue, tipo string) {
@@ -108,9 +110,12 @@ func (s *Scope) ReassignVariable(name string, value *SwiftValue, tipo string) {
 }
 
 func (s *Scope) DeclareVector(name string, contenido *Vector) {
-	s.vectores[name] = contenido
-	s.isVector = true
-	println(contenido.datos)
+	_, exists := s.vectores[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.vectores[name] = contenido
+	}
 }
 
 func (s *Scope) FindVector(name string) *Vector {
@@ -136,16 +141,11 @@ func (s *Scope) FindTypeVector(name string) string {
 func (s *Scope) AddVector(name string, dato *SwiftValue, tipo string) {
 	cont, exists := s.vectores[name]
 	if exists {
-		if s.isVector {
-			if cont.tipo == tipo {
-				cont.apendVec(dato)
-			} else {
-				fmt.Println("error no es el mismo tipo del vector")
-			}
+		if cont.tipo == tipo {
+			cont.apendVec(dato)
 		} else {
-			fmt.Println("error no es vector")
+			fmt.Println("error no es el mismo tipo del vector")
 		}
-
 	} else if s.parent != nil {
 		s.parent.AddVector(name, dato, tipo)
 	}
@@ -154,9 +154,7 @@ func (s *Scope) AddVector(name string, dato *SwiftValue, tipo string) {
 func (s *Scope) DelVector(name string, pos int) {
 	cont, exists := s.vectores[name]
 	if exists {
-		if s.isVector {
-			cont.RemoveAt(pos)
-		}
+		cont.RemoveAt(pos)
 	} else if s.parent != nil {
 		s.parent.DelVector(name, pos)
 	}
@@ -165,9 +163,7 @@ func (s *Scope) DelVector(name string, pos int) {
 func (s *Scope) ReasignVector(name string, pos int, value *SwiftValue) {
 	cont, exists := s.vectores[name]
 	if exists {
-		if s.isVector {
-			cont.datos[pos] = value
-		}
+		cont.datos[pos] = value
 	} else if s.parent != nil {
 		s.parent.ReasignVector(name, pos, value)
 	}
@@ -183,15 +179,39 @@ func (s *Scope) FindVariable(name string) *SwiftValue {
 }
 
 func (s *Scope) DeclareFunction(name string, value *Function) {
-	s.functions[name] = value
+	_, exists := s.functions[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.functions[name] = value
+	}
+
 }
 
 func (s *Scope) FindFunction(name string) *Function {
 	funcValue, exists := s.functions[name]
 	if exists {
 		return funcValue
-	} else if !s.isFunction && s.parent != nil {
+	} else if s.parent != nil {
 		return s.parent.FindFunction(name)
 	}
 	return nil
+}
+
+func (s *Scope) DeclareMatriz(name string, value *Matrix) {
+	_, exists := s.matrices[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.matrices[name] = value
+	}
+}
+
+func (s *Scope) DeclareMatriz3D(name string, value *Matrix3D) {
+	_, exists := s.matrices3D[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.matrices3D[name] = value
+	}
 }
