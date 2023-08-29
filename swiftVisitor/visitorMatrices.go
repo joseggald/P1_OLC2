@@ -15,9 +15,39 @@ func (e *VisitorEvalue) VisitFuncionAsignarMatrizNormal(ctx *parser.FuncionAsign
 	fmt.Printf("Enter - Matriz Normal Statement\n")
 	name := ctx.Id().GetText()
 	tipo := ctx.TiposAsign().GetText()
-	exprMatrix := e.Visit(ctx.ExprListMatrix()).(MatrixResult)
+	var data []*SwiftValue
+	var dato *SwiftValue
+	exprMatrix := e.Visit(ctx.ExprListMatrixDecla()).(MatrixResult)
+	for i := 0; i < len(exprMatrix.Data); i++ {
+		dato=exprMatrix.Data[i]
+		if dato.isInt(){
+			if tipo=="Int"{
+				data = append(data, dato)
+			}else{
+				fmt.Println("error")
+			}
+		}else if dato.isString(){
+			if tipo=="String" || tipo=="Char"{
+				data = append(data, dato)
+			}else{
+				fmt.Println("error")
+			}
+		}else if dato.isBool(){
+			if tipo=="Bool"{
+				data = append(data, dato)
+			}else{
+				fmt.Println("error")
+			}
+		}else if dato.isDouble(){
+			if tipo=="Float"{
+				data = append(data, dato)
+			}else{
+				fmt.Println("error")
+			}
+		}
+	}
 	nuevaMatriz := NewMatrix(exprMatrix.Fila, exprMatrix.Cols, tipo)
-	nuevaMatriz.SetValuesFromList(exprMatrix.Data)
+	nuevaMatriz.SetValuesFromList(data)
 	e.currentScope.DeclareMatriz(name, nuevaMatriz)
 	return VOID
 }
@@ -43,32 +73,161 @@ func (e *VisitorEvalue) VisitExprListMatrix(ctx *parser.ExprListMatrixContext) i
 }
 
 func (e *VisitorEvalue) VisitFuncionAsignarMatriz3D(ctx *parser.FuncionAsignarMatriz3DContext) interface{} {
-	fmt.Printf("Enter - Matriz Normal Statement\n")
+	fmt.Printf("Enter - Matriz 3D Statement\n")
+	name := ctx.Id().GetText()
+	tipo := ctx.TiposAsign().GetText()
 	var data []*SwiftValue
-	cols:=0
-	rows:=0
-	depth:=0
-	for _, index := range ctx.AllExprListMatrix() {
+	cols := 0
+	rows := 0
+	depth := 0
+	var dato *SwiftValue
+	
+	for _, index := range ctx.AllExprListMatrixDecla() {
 		exprMatrix := e.Visit(index).(MatrixResult)
-		if cols==0 && rows==0{
+		for i := 0; i < len(exprMatrix.Data); i++ {
+			dato=exprMatrix.Data[i]
+			if dato.isInt(){
+				if tipo=="Int"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}else if dato.isString(){
+				if tipo=="String" || tipo=="Char"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}else if dato.isBool(){
+				if tipo=="Bool"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}else if dato.isDouble(){
+				if tipo=="Float"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}
+		}
+		if cols == 0 && rows == 0 {
 			data = append(data, exprMatrix.Data...)
-			rows=exprMatrix.Fila
-			cols=exprMatrix.Cols
-		}else{
-			if exprMatrix.Cols == cols && exprMatrix.Fila ==rows{
+			rows = exprMatrix.Fila
+			cols = exprMatrix.Cols
+		} else {
+			if exprMatrix.Cols == cols && exprMatrix.Fila == rows {
 				data = append(data, exprMatrix.Data...)
-				rows=exprMatrix.Fila
-				cols=exprMatrix.Cols
-			}else{
+				rows = exprMatrix.Fila
+				cols = exprMatrix.Cols
+			} else {
 				println("No cumple con la dimensión")
 			}
 		}
-		depth+=1
+		depth += 1
 	}
 	fmt.Println(data)
-	nuevaMatriz3D:=NewMatrix3D(rows,cols,depth)
+	nuevaMatriz3D := NewMatrix3D(rows, cols, depth, tipo)
 	nuevaMatriz3D.SetDataFromList(data)
 	nuevaMatriz3D.Print()
-	
+	e.currentScope.DeclareMatriz3D(name, nuevaMatriz3D)
 	return VOID
+}
+func (e *VisitorEvalue) VisitFuncionAsignarM3D(ctx *parser.FuncionAsignarM3DContext) interface{} {
+	fmt.Printf("Enter - Matriz Normal Statement\n")
+	name := ctx.Id().GetText()
+	tipo := ctx.TiposAsign(0).GetText()
+	tipo_verify := ctx.TiposAsign(1).GetText()
+	tipo_verify2 := ctx.TiposAsign(2).GetText()
+	tipo_verify3 := ctx.TiposAsign(3).GetText()
+	var data []*SwiftValue
+	dato := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	filaExp := e.Visit(ctx.Expression(3)).(*SwiftValue)
+	colExp := e.Visit(ctx.Expression(2)).(*SwiftValue)
+	depthExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	sizeData := depthExp.asInt() * colExp.asInt() * filaExp.asInt()
+	if tipo == tipo_verify && tipo_verify == tipo_verify2 && tipo_verify2 == tipo_verify3 {
+		for i := 0; i < sizeData; i++ {
+			if dato.isInt(){
+				if tipo=="Int"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}else if dato.isString(){
+				if tipo=="String" || tipo=="Char"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}else if dato.isBool(){
+				if tipo=="Bool"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}else if dato.isDouble(){
+				if tipo=="Float"{
+					data = append(data, dato)
+				}else{
+					fmt.Println("error")
+				}
+			}
+		}
+		nuevaMatriz:=NewMatrix3D(filaExp.asInt(),colExp.asInt(),depthExp.asInt(),tipo)
+		nuevaMatriz.SetDataFromList(data)
+		nuevaMatriz.Print()
+		e.currentScope.DeclareMatriz3D(name,nuevaMatriz)
+	} else {
+		fmt.Println("error")
+	}
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitFuncionReasignMatriz(ctx *parser.FuncionReasignMatrizContext) interface{} {
+	fmt.Printf("Enter - Matrix Expression Normal Statement\n")
+	name := ctx.Id().GetText()
+	filaExp := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	colExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	value := e.Visit(ctx.Expression(2)).(*SwiftValue)
+	e.currentScope.ReasignMatriz(name,filaExp.asInt(),colExp.asInt(),value)
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitFuncionReasignMatriz3D(ctx *parser.FuncionReasignMatriz3DContext) interface{} {
+	fmt.Printf("Enter - Matrix Expression 3d Statement\n")
+	name := ctx.Id().GetText()
+	filaExp := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	colExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	depthExp := e.Visit(ctx.Expression(2)).(*SwiftValue)
+	value := e.Visit(ctx.Expression(3)).(*SwiftValue)
+	e.currentScope.ReasignMatriz3D(name,filaExp.asInt(),colExp.asInt(),depthExp.asInt(),value)
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitMatriz3DCallExpression(ctx *parser.Matriz3DCallExpressionContext) interface{} {
+	fmt.Printf("Enter - Matrix Expression 3d Statement\n")
+	name := ctx.Id().GetText()
+	filaExp := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	colExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	depthExp := e.Visit(ctx.Expression(2)).(*SwiftValue)
+	intFila:=filaExp.asInt()
+	intCol:=colExp.asInt()
+	intDepth:=depthExp.asInt()
+	cont:=e.currentScope.findMatriz3D(name)
+	data:=cont.GetValue(intFila,intCol,intDepth)
+	return data
+}
+
+func (e *VisitorEvalue) VisitMatrizCallExpression(ctx *parser.MatrizCallExpressionContext) interface{} {
+	fmt.Printf("Enter - Matrix Expression Statement\n")
+	name := ctx.Id().GetText()
+	filaExp := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	colExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	intFila:=filaExp.asInt()
+	intCol:=colExp.asInt()
+	cont:=e.currentScope.findMatriz(name)
+	data:=cont.GetValue(intFila,intCol)
+	return data
 }

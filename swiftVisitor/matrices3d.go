@@ -9,9 +9,10 @@ type Matrix3D struct {
 	rows  int
 	cols  int
 	depth int
+	tipo  string
 }
 
-func NewMatrix3D(rows, cols, depth int) *Matrix3D {
+func NewMatrix3D(rows, cols, depth int, tipo string) *Matrix3D {
 	data := make([][][]*SwiftValue, rows)
 	for i := range data {
 		data[i] = make([][]*SwiftValue, cols)
@@ -24,6 +25,7 @@ func NewMatrix3D(rows, cols, depth int) *Matrix3D {
 		rows:  rows,
 		cols:  cols,
 		depth: depth,
+		tipo: tipo,
 	}
 }
 
@@ -35,9 +37,11 @@ func (m *Matrix3D) SetValue(row, col, depth int, value *SwiftValue) {
 
 func (m *Matrix3D) GetValue(row, col, depth int) *SwiftValue {
 	if row >= 0 && row < m.rows && col >= 0 && col < m.cols && depth >= 0 && depth < m.depth {
+		fmt.Println("si encontro")
 		return m.data[row][col][depth]
 	}
-	return nil // You might want to handle out-of-bounds cases differently
+	fmt.Println("no encontro")
+	return nil
 }
 func (m *Matrix3D) SetDataFromList(dataList []*SwiftValue) {
 	index := 0

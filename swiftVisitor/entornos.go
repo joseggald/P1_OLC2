@@ -215,3 +215,41 @@ func (s *Scope) DeclareMatriz3D(name string, value *Matrix3D) {
 		s.matrices3D[name] = value
 	}
 }
+
+func (s *Scope) ReasignMatriz(name string, row, col int, value *SwiftValue) {
+	_, exists := s.matrices[name]
+	if exists {
+		s.matrices[name].SetValue(row, col, value)
+	} else if s.parent != nil {
+		s.parent.ReasignMatriz(name, row, col, value)
+	}
+}
+
+func (s *Scope) ReasignMatriz3D(name string, row, col, depth int, value *SwiftValue) {
+	_, exists := s.matrices3D[name]
+	if exists {
+		s.matrices3D[name].SetValue(row, col, depth, value)
+	} else if s.parent != nil { 
+		s.parent.ReasignMatriz3D(name, row, col, depth, value)
+	}
+}
+
+func (s *Scope) findMatriz(name string) *Matrix{
+	cont, exists := s.matrices[name]
+	if exists {
+		return cont
+	} else if s.parent != nil {
+		return s.parent.findMatriz(name)
+	}
+	return nil
+}
+
+func (s *Scope) findMatriz3D(name string) *Matrix3D{
+	cont, exists := s.matrices3D[name]
+	if exists {
+		return cont
+	} else if s.parent != nil {
+		return s.parent.findMatriz3D(name)
+	}
+	return nil
+}

@@ -26,10 +26,18 @@ statement:
 	| incremento
 	| decremento
 	| matrizAsign
+	| reasigMatriz
 ;
 
-matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrix ']' # FuncionAsignarMatrizNormal
-|	Var Id ':' '[' '[''['  tiposAsign ']' ']' ']' '=' '[' ('['exprListMatrix']')* ']' # FuncionAsignarMatriz3D
+reasigMatriz: Id '[' expression ']' '[' expression ']' '=' expression		# FuncionReasignMatriz
+			|	Id '[' expression ']' '[' expression ']' '[' expression ']' '=' expression	 	# FuncionReasignMatriz3D
+;
+
+matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla ']' 			# FuncionAsignarMatrizNormal
+|	Var Id ':' '[' '[''['  tiposAsign ']' ']' ']' '=' '[' ( '[' exprListMatrixDecla ']' )* ']' 	# FuncionAsignarMatriz3D
+|	Var Id ':' '[' '[' '['  tiposAsign ']' ']' ']' '=' '[' '[''['  tiposAsign ']' ']' ']' '(' REPEATING ':' '[' 
+'[' tiposAsign ']' ']' '(' REPEATING ':' '[' tiposAsign ']' ',' '(' REPEATING ':' expression ',' COUNT ':' 
+expression ')' ','  COUNT ':' expression')' ',' COUNT ':' expression ')'  # FuncionAsignarM3D
 ;
 
 defStruct: STRUCT Id '{' atributosLista '}'
@@ -141,11 +149,13 @@ fPrint:
 
 exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
 exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
-exprListMatrix: '[' exprVector ']' (',' '[' exprVector ']')* # exprListMatrix;
+exprListMatrixDecla: '[' exprVector ']' (',' '[' exprVector ']')* 	# exprListMatrix;
 exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
 exprListCallFunc2: expression ( ',' Id ':' expression )*;
 
-exprVector: expression ( ',' expression )*;
+exprVector: expression ( ',' expression )*
+;
+
 expression:
 	'-' expression											# funcionUnariaExp
 	| <assoc = right> expression '^' expression				# funcionPowExp
@@ -167,6 +177,8 @@ expression:
 	| Id '.' COUNT											# countExpression
 	| Id '.' 'IsEmpty'										# emptyVecExpression
 	| Id '[' expression ']'								 	# vecCallExpression
+	| Id '[' expression ']' '[' expression ']'				# matrizCallExpression
+	| Id '[' expression ']' '[' expression ']' '[' expression ']'	# matriz3DCallExpression
 ;
 
 indexes: ( '[' expression ']')+;
@@ -199,6 +211,7 @@ REMOVELAST:'removeLast';
 AT:'at';
 RANGE: '...';
 CONTINUE:'continue';
+REPEATING:'repeating';
 //Valores
 BoolVal: 'true' | 'false';
 Float: [0-9]+ '.' Digit*;
