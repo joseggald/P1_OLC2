@@ -12,6 +12,7 @@ type Scope struct {
 	vectores           map[string]*Vector
 	matrices           map[string]*Matrix
 	matrices3D         map[string]*Matrix3D
+	structs            map[string]*Struct
 }
 
 func NewScope() *Scope {
@@ -23,6 +24,7 @@ func NewScope() *Scope {
 		vectores:           map[string]*Vector{},
 		matrices:           map[string]*Matrix{},
 		matrices3D:         map[string]*Matrix3D{},
+		structs:         	map[string]*Struct{},
 	}
 }
 
@@ -250,6 +252,25 @@ func (s *Scope) findMatriz3D(name string) *Matrix3D{
 		return cont
 	} else if s.parent != nil {
 		return s.parent.findMatriz3D(name)
+	}
+	return nil
+}
+
+func (s *Scope) DeclareStruct(name string, value *Struct) {
+	_, exists := s.structs[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.structs[name] = value
+	}
+}
+
+func (s *Scope) findStruct(name string) *Struct{
+	cont, exists := s.structs[name]
+	if exists {
+		return cont
+	} else if s.parent != nil {
+		return s.parent.findStruct(name)
 	}
 	return nil
 }

@@ -52,9 +52,9 @@ func (v *SwiftValue) asString() string {
 	return v.value.(string)
 }
 func (v *SwiftValue) isChar() bool {
-	a:=false
-	if len(v.asString())>2{
-		a=true
+	a:=true
+	if len(v.value.(string))>1{
+		a=false
 	}
 	return a
 }

@@ -27,6 +27,7 @@ statement:
 	| decremento
 	| matrizAsign
 	| reasigMatriz
+	| defStruct
 ;
 
 reasigMatriz: Id '[' expression ']' '[' expression ']' '=' expression		# FuncionReasignMatriz
@@ -40,13 +41,12 @@ matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla '
 expression ')' ','  COUNT ':' expression')' ',' COUNT ':' expression ')'  # FuncionAsignarM3D
 ;
 
-defStruct: STRUCT Id '{' atributosLista '}'
+defStruct: STRUCT Id '{' (atributosLista)*  '}' # FuncionDefStruct
 ;
 
-atributosLista:	op=(Let|Var) Id (:tiposAsign)?
-;
-
-dupla:
+atributosLista:	op=(Let|Var) Id (':' tiposAsign) # FuncionAtributosListTipo
+| op=(Let|Var) Id ('=' expression) 	# FuncionAtributosListExp
+| op=(Let|Var) Id ':' tiposAsign '=' Id '(' exprListStruct ')'	# FuncionAtributosStruct
 ;
 
 incremento: Id '+''=' expression # FuncionIncremento
@@ -94,14 +94,13 @@ switchstmt: SWITCH expression '{' (bloqueCase)* DEFAULT ':' (sentencias)? '}' # 
 bloqueCase: CASE expression ':' (sentencias)?
 ;
 
-callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
-| Id '(' (exprListCallFunc2)? ')' # FuncionCallFunc2
+callFuncstmt: IdMinus '(' (exprListCallFunc)? ')' # FuncionCallFunc
+| IdMinus '(' (exprVector)? ')' # FuncionCallFunc2
 ;
 
 funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentencias '}' # FuncionDeclaFunc
 	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentencias '}' # FuncionDeclaFunc2
 ;
-
 
 ifstmt: ifstat ((elseifstmt)*)? (elsestmt)?
 ;
@@ -126,9 +125,13 @@ continuestmt: CONTINUE # FuncionContinue
 ;
 
 asignacion: 
-	tipoInit Id '=' expression 	# funcionAsigExp
+	tipoInit Id '=' structAsig # funcionAsigStruct
 	| tipoInit Id ':' tiposAsign '=' expression # funcionAsigTipoExp
 	| tipoInit Id ':' tiposAsign '?' # funcionAsigTipoNil
+	| tipoInit Id '=' expression 	# funcionAsigExp
+;
+
+structAsig: Id '(' (exprListStruct) ')'						# defStructExpression
 ;
 
 tipoInit: Var |
@@ -146,12 +149,14 @@ fPrint:
 	Print '(' expression? ')'	# funcionPrint
 ;
 
+exprListStruct:Id ':' (expression|structAsig) ( ',' Id ':' (expression|structAsig))*
+;
 
 exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
 exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
 exprListMatrixDecla: '[' exprVector ']' (',' '[' exprVector ']')* 	# exprListMatrix;
 exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
-exprListCallFunc2: expression ( ',' Id ':' expression )*;
+
 
 exprVector: expression ( ',' expression )*
 ;
@@ -218,6 +223,8 @@ Float: [0-9]+ '.' Digit*;
 Entero: [0-9]+;
 Nil:'nil';
 Id: [a-zA-Z] [a-zA-Z_0-9]*;
+IdMinus: [a-z] [a-zA-Z_0-9]*;
+IdMayus: [A-Z] [a-zA-Z_0-9]*;
 String:
 	["] (~["\r\n\\] | '\\' ~[\r\n])* ["]
 	| ['] ( ~['\r\n\\] | '\\' ~[\r\n])* [']

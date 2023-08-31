@@ -1,6 +1,7 @@
 package swiftVisitor
 
 type AtributoVariable struct {
+	name	string
 	dato *SwiftValue
 	tipo   string
 	constante bool

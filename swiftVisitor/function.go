@@ -13,7 +13,6 @@ type Param struct {
 type Function struct {
 	params    []*Param
 	body      antlr.ParserRuleContext
-	valReturn *SwiftValue
 	tipo	string
 }
 
@@ -21,7 +20,6 @@ func NewFunction(params []*Param, body antlr.ParserRuleContext, valReturn *Swift
 	return &Function{
 		params:    params,
 		body:      body,
-		valReturn: valReturn,
 		tipo:	tipo,
 	}
 }

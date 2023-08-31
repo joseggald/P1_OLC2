@@ -63,7 +63,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 
 func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext) interface{} {
 	fmt.Printf("Entering VisitFuncionCallFunc\n")
-	functionName := ctx.Id().GetText()
+	functionName := ctx.IdMinus().GetText()
 	if function := e.currentScope.FindFunction(functionName); function != nil {
 		var args []*SwiftValue
 		if exprList := ctx.ExprListCallFunc(); exprList != nil {
