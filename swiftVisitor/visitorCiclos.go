@@ -38,7 +38,7 @@ func (e *VisitorEvalue) VisitFuncionForstmt(ctx *parser.FuncionForstmtContext) i
 	}
 
 	forScope := e.currentScope.CreateChildScope()
-	id := ctx.Id().GetText()
+	id := ctx.TiposId().GetText()
 
 	for i := start; i <= end; i++ {
 		loopVarValue := &SwiftValue{value: i}
@@ -106,7 +106,7 @@ func (e *VisitorEvalue) VisitFuncionSwitchstmt(ctx *parser.FuncionSwitchstmtCont
 func (e *VisitorEvalue) VisitFuncionForExpstmt(ctx *parser.FuncionForExpstmtContext) interface{} {
 	fmt.Printf("Enter - For Statement\n")
 	forScope := e.currentScope.CreateChildScope()
-	id := ctx.Id().GetText()
+	id := ctx.TiposId().GetText()
 	dataEnd := ctx.String_().GetText()
 	dataStr := strings.Trim(dataEnd, "\"")
 	fmt.Println("String")
@@ -137,8 +137,8 @@ func (e *VisitorEvalue) VisitFuncionForExpstmt(ctx *parser.FuncionForExpstmtCont
 func (e *VisitorEvalue) VisitFuncionForIdstmt(ctx *parser.FuncionForIdstmtContext) interface{} {
 	fmt.Printf("Enter - For Statement\n")
 	forScope := e.currentScope.CreateChildScope()
-	id := ctx.Id(0).GetText()
-	dataEnd := ctx.Id(1).GetText()
+	id := ctx.TiposId(0).GetText()
+	dataEnd := ctx.TiposId(1).GetText()
 	start := 0
 	fmt.Println(dataEnd)
 	var end int

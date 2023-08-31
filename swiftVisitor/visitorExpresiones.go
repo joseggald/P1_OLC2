@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) interface{} {
 	id := ctx.Id().GetText()
 	variable := e.currentScope.FindVariable(id)
@@ -20,21 +19,21 @@ func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) inter
 }
 
 func (e *VisitorEvalue) VisitCountExpression(ctx *parser.CountExpressionContext) interface{} {
-	id := ctx.Id().GetText()
+	id := ctx.TiposId().GetText()
 	cont := e.currentScope.FindVector(id)
-	tam:=len(cont.datos)
+	tam := len(cont.datos)
 	return &SwiftValue{tam}
 }
 
 func (e *VisitorEvalue) VisitEmptyVecExpression(ctx *parser.EmptyVecExpressionContext) interface{} {
-	id := ctx.Id().GetText()
+	id := ctx.TiposId().GetText()
 	cont := e.currentScope.FindVector(id)
-	tam:=len(cont.datos)
-	ret:=false
-	if tam<1{
-		ret=true
-	}else{
-		ret=false
+	tam := len(cont.datos)
+	ret := false
+	if tam < 1 {
+		ret = true
+	} else {
+		ret = false
 	}
 	return &SwiftValue{ret}
 }
@@ -48,7 +47,6 @@ func (e *VisitorEvalue) VisitFloatExpression(ctx *parser.FloatExpressionContext)
 	numero, _ := strconv.ParseFloat(ctx.GetText(), 64)
 	return &SwiftValue{numero}
 }
-
 
 func (e *VisitorEvalue) VisitBoolExpression(ctx *parser.BoolExpressionContext) interface{} {
 	valueBool := ctx.GetText() == "true"
@@ -93,31 +91,39 @@ func (e *VisitorEvalue) VisitExpressionMultDivMod(ctx *parser.ExpressionMultDivM
 }
 
 func (e *VisitorEvalue) suma(left *SwiftValue, right *SwiftValue) interface{} {
-	var er=true
-	if left.isDouble() && right.isDouble(){
-		er=false
+	var er = true
+	if left.isDouble() && right.isDouble() {
+		er = false
 		return &SwiftValue{left.asDouble() + right.asDouble()}
 	}
-	if left.isInt() && right.isInt(){
-		er=false
-		return &SwiftValue{left.asInt() + right.asInt() }
+	if left.isInt() && right.isInt() {
+		er = false
+		return &SwiftValue{left.asInt() + right.asInt()}
 	}
-	if left.isDouble() && right.isInt(){
-		er=false
-		return &SwiftValue{left.asDouble() + right.asDouble() }
+	if left.isDouble() && right.isInt() {
+		er = false
+		return &SwiftValue{left.asDouble() + right.asDouble()}
 	}
 	if left.isString() && right.isString() {
-		er=false
+		er = false
 		return &SwiftValue{left.asString() + right.asString()}
 	}
-	if er{
+	if er {
 		fmt.Println("Error de operación suma")
 	}
 	return NULL
 }
 
 func (e *VisitorEvalue) resta(left *SwiftValue, right *SwiftValue) interface{} {
-	return &SwiftValue{left.asDouble() - right.asDouble()}
+	var dataReturn *SwiftValue
+	if left.isInt() && right.isDouble() {
+		fmt.Println("error")
+	} else if left.isInt() && right.isInt() {
+		dataReturn = &SwiftValue{left.asInt() - right.asInt()}
+	} else if left.isDouble() && right.isInt() {
+		dataReturn = &SwiftValue{left.asDouble() - right.asDouble()}
+	}
+	return dataReturn
 }
 
 func (e *VisitorEvalue) mult(left *SwiftValue, right *SwiftValue) interface{} {
@@ -140,12 +146,12 @@ func (e *VisitorEvalue) div(left *SwiftValue, right *SwiftValue) interface{} {
 }
 
 func (e *VisitorEvalue) mod(left *SwiftValue, right *SwiftValue) interface{} {
-	var er=true
-	if left.isInt() && right.isInt(){
-		er=false
-		return &SwiftValue{left.asInt() % right.asInt() }
+	var er = true
+	if left.isInt() && right.isInt() {
+		er = false
+		return &SwiftValue{left.asInt() % right.asInt()}
 	}
-	if er{
+	if er {
 		fmt.Println("Error de operación mod")
 	}
 	return NULL

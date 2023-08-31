@@ -16,9 +16,9 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc(ctx *parser.FuncionDeclaFuncContex
 	tipe := ctx.TiposAsign().GetText()
 	var params []*Param
 	if paramList := ctx.ExprListFunc(); paramList != nil {
-		for i := 0; i < len(paramList.AllId()); i += 2 {
-			idExterior := paramList.Id(i).GetText()
-			idInterior := paramList.Id(i + 1).GetText()
+		for i := 0; i < len(paramList.AllTiposId()); i += 2 {
+			idExterior := paramList.TiposId(i).GetText()
+			idInterior := paramList.TiposId(i + 1).GetText()
 			typ := paramList.TiposAsign(i / 2).GetText()
 			params = append(params, &Param{
 				idExterior: idExterior,
@@ -41,9 +41,9 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 	fmt.Printf("Entro VisitFuncionDeclaFunc\n")
 	var params []*Param
 	if paramList := ctx.ExprListFunc(); paramList != nil {
-		for i := 0; i < len(paramList.AllId()); i += 2 {
-			idExterior := paramList.Id(i).GetText()
-			idInterior := paramList.Id(i + 1).GetText()
+		for i := 0; i < len(paramList.AllTiposId()); i += 2 {
+			idExterior := paramList.TiposId(i).GetText()
+			idInterior := paramList.TiposId(i + 1).GetText()
 			typ := paramList.TiposAsign(i / 2).GetText()
 			params = append(params, &Param{
 				idExterior: idExterior,
@@ -51,6 +51,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 				typ:        typ,
 			})
 		}
+		
 	} else {
 		params = nil
 	}
@@ -63,7 +64,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 
 func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext) interface{} {
 	fmt.Printf("Entering VisitFuncionCallFunc\n")
-	functionName := ctx.IdMinus().GetText()
+	functionName := ctx.Id().GetText()
 	if function := e.currentScope.FindFunction(functionName); function != nil {
 		var args []*SwiftValue
 		if exprList := ctx.ExprListCallFunc(); exprList != nil {

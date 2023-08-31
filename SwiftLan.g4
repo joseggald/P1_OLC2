@@ -41,48 +41,48 @@ matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla '
 expression ')' ','  COUNT ':' expression')' ',' COUNT ':' expression ')'  # FuncionAsignarM3D
 ;
 
-defStruct: STRUCT Id '{' (atributosLista)*  '}' # FuncionDefStruct
+defStruct: STRUCT IdMayus '{' (atributosLista)*  '}' # FuncionDefStruct
 ;
 
-atributosLista:	op=(Let|Var) Id (':' tiposAsign) # FuncionAtributosListTipo
-| op=(Let|Var) Id ('=' expression) 	# FuncionAtributosListExp
-| op=(Let|Var) Id ':' tiposAsign '=' Id '(' exprListStruct ')'	# FuncionAtributosStruct
+atributosLista:	op=(Let|Var) (Id|IdMayus) (':' tiposAsign) # FuncionAtributosListTipo
+| op=(Let|Var) (Id|IdMayus) ('=' expression) 	# FuncionAtributosListExp
+| op=(Let|Var) (Id|IdMayus)  ':' tiposAsign '=' Id '(' exprListStruct ')'	# FuncionAtributosStruct
 ;
 
-incremento: Id '+''=' expression # FuncionIncremento
+incremento: (Id|IdMayus) '+''=' expression # FuncionIncremento
 ;
 
-decremento: Id '-''=' expression # FuncionDecremento
+decremento: (Id|IdMayus) '-''=' expression # FuncionDecremento
 ;
 
-removeVec:Id '.' REMOVE '(' AT ':' expression')' # FuncionRemoveVec
+removeVec:tiposId '.' REMOVE '(' AT ':' expression')' # FuncionRemoveVec
 ;
 
-vecReasig: Id '[' expression ']' '=' expression # FuncionVecReasig
+vecReasig: tiposId'[' expression ']' '=' expression # FuncionVecReasig
 ;
 
-removeLastVec:Id '.' REMOVELAST '('')' # FuncionRemoveLastVec
+removeLastVec:tiposId'.' REMOVELAST '('')' # FuncionRemoveLastVec
 ;
 
-appendVec: Id'.'APEND '('expression')' # FuncionAppendVector
+appendVec: tiposId '.'APEND '('expression')' # FuncionAppendVector
 ;
 
-vectorAsign: Var Id ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # FuncionVectorAsig
-	| Var Id ':' '[' tiposAsign ']' '=' Id # FuncionVectorAsigVar
+vectorAsign: Var tiposId ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # FuncionVectorAsig
+	| Var tiposId ':' '[' tiposAsign ']' '=' tiposId # FuncionVectorAsigVar
 ;
 
-reasignacion: Id '=' expression # FuncionReasign
+reasignacion: (Id|IdMayus) '=' expression # FuncionReasign
 ;
 
-forstmt: FOR Id 'in' EnteroRange '{' sentencias '}' # FuncionForstmt
-| FOR Id 'in' String '{' sentencias '}' # FuncionForExpstmt
-|  FOR Id 'in' Id '{' sentencias '}' # FuncionForIdstmt
+forstmt: FOR tiposId  'in' EnteroRange '{' sentencias '}' # FuncionForstmt
+| FOR tiposId  'in' String '{' sentencias '}' # FuncionForExpstmt
+|  FOR tiposId 'in' tiposId '{' sentencias '}' # FuncionForIdstmt
 ;
 
 guardstmt: GUARD expression ELSE '{' sentencias '}'
 ;
 
-EnteroRange: (Entero|Id) RANGE (Entero|Id)
+EnteroRange: (Entero|Id|IdMayus) RANGE (Entero|Id|IdMayus)
 ;
 
 whilestmt: WHILE expression '{' sentencias '}' # FuncionWhilestmt
@@ -94,8 +94,8 @@ switchstmt: SWITCH expression '{' (bloqueCase)* DEFAULT ':' (sentencias)? '}' # 
 bloqueCase: CASE expression ':' (sentencias)?
 ;
 
-callFuncstmt: IdMinus '(' (exprListCallFunc)? ')' # FuncionCallFunc
-| IdMinus '(' (exprVector)? ')' # FuncionCallFunc2
+callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
+| Id '(' (exprVector)? ')' # FuncionCallFunc2
 ;
 
 funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentencias '}' # FuncionDeclaFunc
@@ -125,13 +125,13 @@ continuestmt: CONTINUE # FuncionContinue
 ;
 
 asignacion: 
-	tipoInit Id '=' structAsig # funcionAsigStruct
-	| tipoInit Id ':' tiposAsign '=' expression # funcionAsigTipoExp
-	| tipoInit Id ':' tiposAsign '?' # funcionAsigTipoNil
-	| tipoInit Id '=' expression 	# funcionAsigExp
+	tipoInit tiposId '=' structAsig # funcionAsigStruct
+	| tipoInit tiposId ':' tiposAsign '=' expression # funcionAsigTipoExp
+	| tipoInit tiposId  ':' tiposAsign '?' # funcionAsigTipoNil
+	| tipoInit tiposId  '=' expression 	# funcionAsigExp
 ;
 
-structAsig: Id '(' (exprListStruct) ')'						# defStructExpression
+structAsig: IdMayus '(' (exprListStruct) ')'						# defStructExpression
 ;
 
 tipoInit: Var |
@@ -143,19 +143,23 @@ tiposAsign:
 	| StringDecla
 	| BoolDecla
 	| CharDecla
+	| IdMayus	
 ;
 
 fPrint:
 	Print '(' expression? ')'	# funcionPrint
 ;
 
-exprListStruct:Id ':' (expression|structAsig) ( ',' Id ':' (expression|structAsig))*
+exprListStruct: tiposId ':' (expression|structAsig) ( ',' tiposId ':' (expression|structAsig))* # listAtibStruct
 ;
 
-exprListFunc: Id Id ':' tiposAsign ( ',' Id Id ':' tiposAsign)*;
-exprListFuncBajo: '_' Id ':' tiposAsign ( ',' '_' Id ':' tiposAsign)*;
+tiposId:Id
+|IdMayus;
+
+exprListFunc: tiposId tiposId ':' tiposAsign ( ',' tiposId tiposId ':' tiposAsign)*;
+exprListFuncBajo: '_' tiposId ':' tiposAsign ( ',' '_' tiposId ':' tiposAsign)*;
 exprListMatrixDecla: '[' exprVector ']' (',' '[' exprVector ']')* 	# exprListMatrix;
-exprListCallFunc: Id ':' expression ( ',' Id ':' expression )* ;
+exprListCallFunc: tiposId ':' expression ( ',' tiposId ':' expression )* ;
 
 
 exprVector: expression ( ',' expression )*
@@ -179,14 +183,13 @@ expression:
 	| String												# stringExpression								
 	| '(' expression ')'									# expressionExpression
 	| callFuncstmt											# exprCalFunc
-	| Id '.' COUNT											# countExpression
-	| Id '.' 'IsEmpty'										# emptyVecExpression
-	| Id '[' expression ']'								 	# vecCallExpression
-	| Id '[' expression ']' '[' expression ']'				# matrizCallExpression
-	| Id '[' expression ']' '[' expression ']' '[' expression ']'	# matriz3DCallExpression
+	| tiposId '.' COUNT											# countExpression
+	| tiposId '.' 'IsEmpty'										# emptyVecExpression
+	| tiposId '[' expression ']'								 	# vecCallExpression
+	| tiposId '[' expression ']' '[' expression ']'				# matrizCallExpression
+	| tiposId '[' expression ']' '[' expression ']' '[' expression ']'	# matriz3DCallExpression
+	| tiposId '.' tiposId									# structExpression
 ;
-
-indexes: ( '[' expression ']')+;
 
 //Reservadas
 Var:'var';
@@ -222,9 +225,8 @@ BoolVal: 'true' | 'false';
 Float: [0-9]+ '.' Digit*;
 Entero: [0-9]+;
 Nil:'nil';
-Id: [a-zA-Z] [a-zA-Z_0-9]*;
-IdMinus: [a-z] [a-zA-Z_0-9]*;
-IdMayus: [A-Z] [a-zA-Z_0-9]*;
+Id: [a-z][a-zA-Z_0-9]*;
+IdMayus: [A-Z][a-zA-Z_0-9]*;
 String:
 	["] (~["\r\n\\] | '\\' ~[\r\n])* ["]
 	| ['] ( ~['\r\n\\] | '\\' ~[\r\n])* [']

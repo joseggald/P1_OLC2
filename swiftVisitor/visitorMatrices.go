@@ -208,7 +208,7 @@ func (e *VisitorEvalue) VisitFuncionReasignMatriz3D(ctx *parser.FuncionReasignMa
 
 func (e *VisitorEvalue) VisitMatriz3DCallExpression(ctx *parser.Matriz3DCallExpressionContext) interface{} {
 	fmt.Printf("Enter - Matrix Expression 3d Statement\n")
-	name := ctx.Id().GetText()
+	name := ctx.TiposId().GetText()
 	filaExp := e.Visit(ctx.Expression(0)).(*SwiftValue)
 	colExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
 	depthExp := e.Visit(ctx.Expression(2)).(*SwiftValue)
@@ -222,7 +222,7 @@ func (e *VisitorEvalue) VisitMatriz3DCallExpression(ctx *parser.Matriz3DCallExpr
 
 func (e *VisitorEvalue) VisitMatrizCallExpression(ctx *parser.MatrizCallExpressionContext) interface{} {
 	fmt.Printf("Enter - Matrix Expression Statement\n")
-	name := ctx.Id().GetText()
+	name := ctx.TiposId().GetText()
 	filaExp := e.Visit(ctx.Expression(0)).(*SwiftValue)
 	colExp := e.Visit(ctx.Expression(1)).(*SwiftValue)
 	intFila:=filaExp.asInt()

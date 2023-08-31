@@ -8,7 +8,12 @@ import (
 func (e *VisitorEvalue) VisitFuncionIncremento(ctx *parser.FuncionIncrementoContext) interface{} {
 	fmt.Printf("Entro FuncionIncremento\n")
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	name := ctx.Id().GetText()
+	var name string
+	if ctx.Id() != nil {
+		name = ctx.Id().GetText()
+	} else if ctx.IdMayus() != nil {
+		name = ctx.IdMayus().GetText()
+	}
 	a := e.currentScope.FindVariable(name)
 	if a != VOID {
 		if newVal.isInt() {
@@ -36,7 +41,12 @@ func (e *VisitorEvalue) VisitFuncionIncremento(ctx *parser.FuncionIncrementoCont
 func (e *VisitorEvalue) VisitFuncionDecremento(ctx *parser.FuncionDecrementoContext) interface{} {
 	fmt.Printf("Entro FuncionIncremento\n")
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	name := ctx.Id().GetText()
+	var name string
+	if ctx.Id() != nil {
+		name = ctx.Id().GetText()
+	} else if ctx.IdMayus() != nil {
+		name = ctx.IdMayus().GetText()
+	}
 	a := e.currentScope.FindVariable(name)
 	if a != VOID {
 		if newVal.isInt() {
@@ -62,9 +72,9 @@ func (e *VisitorEvalue) VisitFuncionDecremento(ctx *parser.FuncionDecrementoCont
 func (e *VisitorEvalue) VisitFuncionAsigExp(ctx *parser.FuncionAsigExpContext) interface{} {
 	fmt.Printf("Entro FuncionAsigExp\n")
 	c := false
-
+	var name string
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	name := ctx.Id().GetText()
+	name=ctx.TiposId().GetText()
 	cons := ctx.TipoInit().GetText()
 	if cons == "let" {
 		c = true
@@ -86,8 +96,8 @@ func (e *VisitorEvalue) VisitFuncionAsigExp(ctx *parser.FuncionAsigExpContext) i
 func (e *VisitorEvalue) VisitFuncionAsigTipoNil(ctx *parser.FuncionAsigTipoNilContext) interface{} {
 	fmt.Printf("Entro FuncionAsigNilExp\n")
 	newVal := NULL
-	name := ctx.Id().GetText()
-	println(ctx.TiposAsign().GetText())
+	var name string
+	name=ctx.TiposId().GetText()
 	c := false
 	cons := ctx.TipoInit().GetText()
 	if cons == "let" {
@@ -102,7 +112,8 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoNil(ctx *parser.FuncionAsigTipoNilCo
 func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpContext) interface{} {
 	fmt.Printf("Entro FuncionAsigTipoExp\n")
 	valVar := e.Visit(ctx.Expression()).(*SwiftValue)
-	name := ctx.Id().GetText()
+	var name string
+	name=ctx.TiposId().GetText()
 	existe := e.currentScope.FindVariable(name)
 	c := false
 	cons := ctx.TipoInit().GetText()
@@ -118,7 +129,7 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpCo
 					e.currentScope.DeclareVariable(name, valVar, ctx.TiposAsign().GetText(), c)
 					fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
 				}
-			}else {
+			} else {
 				if ctx.TiposAsign().GetText() == "String" {
 					e.currentScope.DeclareVariable(name, valVar, ctx.TiposAsign().GetText(), c)
 					fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
@@ -159,7 +170,12 @@ func (e *VisitorEvalue) VisitFuncionReasign(ctx *parser.FuncionReasignContext) i
 	fmt.Printf("Entro FuncionReasign\n")
 
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	name := ctx.Id().GetText()
+	var name string
+	if ctx.Id() != nil {
+		name = ctx.Id().GetText()
+	} else if ctx.IdMayus() != nil {
+		name = ctx.IdMayus().GetText()
+	}
 	a := e.currentScope.FindVariable(name)
 	if a != VOID {
 		if newVal.isInt() {
@@ -175,17 +191,34 @@ func (e *VisitorEvalue) VisitFuncionReasign(ctx *parser.FuncionReasignContext) i
 	} else if e.currentScope.FindVariable(name) == nil {
 		println("error no existe variable")
 	}
-	fmt.Printf("En FuncionReasign - Nombre Variable: %v Valor: %v\n", name, newVal.value)
+	fmt.Printf("En FuncionAsigStruct - Nombre Variable: %v Valor: %v\n", name, newVal.value)
 
 	return VOID
 }
 
 func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructContext) interface{} {
-	fmt.Printf("Entro FuncionReasign\n")
-	//id:=ctx.Id().GetText()
-	var dataStruct *returnStruct
-	dataStruct=e.Visit(ctx.StructAsig()).(*returnStruct)
-	fmt.Println(dataStruct.name)
+	fmt.Printf("Entro Funcion Asignar Struct\n")
+	var name string
+	name=ctx.TiposId().GetText()
+	var variables []*AtributoVariable
+	var funcs []*FunctionStruct
+	dataStruct := e.Visit(ctx.StructAsig()).(returnStruct)
+	structCont:=e.currentScope.findStruct(dataStruct.name)
 
+	for _,vars:=range dataStruct.variables{
+		for _,varsStruct:=range structCont.variables{
+			if !varsStruct.constante{
+				if vars.name == varsStruct.name{
+					if vars.tipo == varsStruct.tipo{
+						datoVar:=NewAtributoVariable(vars.dato,vars.tipo,false)
+						datoVar.name=vars.name
+						variables = append(variables, datoVar)
+					}
+				}
+			}
+		}
+	}
+	result:=NewStruct(funcs,variables)
+	e.currentScope.DeclareVarStruct(name,result)
 	return VOID
 }

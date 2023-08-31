@@ -10,11 +10,12 @@ type returnStruct struct{
 	variables []*AtributoVariable
 	structs []*Struct
 }
+
 func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContext) interface{} {
-	id := ctx.Id().GetText()
+	id := ctx.IdMayus().GetText()
 	var funcs []*FunctionStruct
 	var variables []*AtributoVariable
-
+	fmt.Println(id)
 	for _, index := range ctx.AllAtributosLista() {
 		argValue := e.Visit(index).(*AtributoVariable)
 		fmt.Println(argValue.name)
@@ -28,7 +29,12 @@ func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContex
 
 func (e *VisitorEvalue) VisitFuncionAtributosListTipo(ctx *parser.FuncionAtributosListTipoContext) interface{} {
 	consta:= false
-	id := ctx.Id().GetText()
+	var id string
+	if ctx.Id() != nil {
+		id = ctx.Id().GetText()
+	} else if ctx.IdMayus() != nil {
+		id = ctx.IdMayus().GetText()
+	}
 	tipo := ctx.TiposAsign().GetText()
 	var dato *SwiftValue
 	switch ctx.GetOp().GetTokenType() {
@@ -47,7 +53,12 @@ func (e *VisitorEvalue) VisitFuncionAtributosListTipo(ctx *parser.FuncionAtribut
 
 func (e *VisitorEvalue) VisitFuncionAtributosListExp(ctx *parser.FuncionAtributosListExpContext) interface{} {
 	consta:= false
-	id := ctx.Id().GetText()
+	var id string
+	if ctx.Id() != nil {
+		id = ctx.Id().GetText()
+	} else if ctx.IdMayus() != nil {
+		id = ctx.IdMayus().GetText()
+	}
 	value:=e.Visit(ctx.Expression())
 	dato:=value.(*SwiftValue)
 	tipo:=""
@@ -79,46 +90,61 @@ func (e *VisitorEvalue) VisitFuncionAtributosListExp(ctx *parser.FuncionAtributo
 
 func (e *VisitorEvalue) VisitDefStructExpression(ctx *parser.DefStructExpressionContext) interface{} {
 	name:=ctx.IdMayus().GetText()
+	fmt.Println(name)
+	data:=e.Visit(ctx.ExprListStruct()).(returnStruct)
+	fmt.Println(data.name)
+	return returnStruct{
+		name:name,
+		variables:data.variables,
+		structs:data.structs,
+	}
+}
+
+func (e *VisitorEvalue) VisitListAtibStruct(ctx *parser.ListAtibStructContext) interface{} {
 	var atributos []*AtributoVariable
 	var atributosStructs []*Struct
 	var value []*SwiftValue
 	var names []string
 	var tipos []string
-	if exprList := ctx.ExprListStruct(); exprList != nil {
-		for _, expr := range exprList.AllExpression() {
-			argValue := e.Visit(expr).(*SwiftValue)
-			value = append(value, argValue)
-			if argValue.isInt() {
-				tipos = append(tipos, "Int")
-			}else if argValue.isString() {
-				if argValue.isChar() {
-					tipos = append(tipos, "Char")
-				}else{
-					tipos = append(tipos, "String")
-				}
-			}else if argValue.isBool() {
-				tipos = append(tipos, "Bool")
-			}else if argValue.isDouble() {
-				tipos = append(tipos, "Float")
+	for _, expr := range ctx.AllExpression() {
+		fmt.Println(e.Visit(expr))
+		argValue := e.Visit(expr).(*SwiftValue)
+		value = append(value, argValue)
+		if argValue.isInt() {
+			tipos = append(tipos, "Int")
+		}else if argValue.isString() {
+			if argValue.isChar() {
+				tipos = append(tipos, "Char")
+			}else{
+				tipos = append(tipos, "String")
 			}
-		}
-		for _, iden := range exprList.AllId(){
-			nameValue := iden.GetText()
-			names = append(names, nameValue)
-		}
-		for _, structs := range exprList.AllStructAsig(){
-			structValue:=e.Visit(structs).(*Struct)
-			atributosStructs = append(atributosStructs, structValue)
+		}else if argValue.isBool() {
+			tipos = append(tipos, "Bool")
+		}else if argValue.isDouble() {
+			tipos = append(tipos, "Float")
 		}
 	}
+	
+	for _,id :=range ctx.AllTiposId(){
+		nom:=id.GetText()
+		names = append(names, nom)
+	}
+	
+	for _, structs := range ctx.AllStructAsig(){
+		structValue:=e.Visit(structs).(*Struct)
+		atributosStructs = append(atributosStructs, structValue)
+	}
+	
 	for i := 0; i < len(names); i++ {
 		dato:=NewAtributoVariable(value[i],tipos[i],true)
 		dato.name=names[i]
 		atributos = append(atributos,dato)
 	}
+
 	return returnStruct{
-		name:name,
+		name:"ola",
 		variables: atributos,
 		structs:atributosStructs,
 	}
 }
+
