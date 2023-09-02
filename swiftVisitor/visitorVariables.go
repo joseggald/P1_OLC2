@@ -112,8 +112,7 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoNil(ctx *parser.FuncionAsigTipoNilCo
 func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpContext) interface{} {
 	fmt.Printf("Entro FuncionAsigTipoExp\n")
 	valVar := e.Visit(ctx.Expression()).(*SwiftValue)
-	var name string
-	name=ctx.TiposId().GetText()
+	name:=ctx.TiposId().GetText()
 	existe := e.currentScope.FindVariable(name)
 	c := false
 	cons := ctx.TipoInit().GetText()
@@ -187,7 +186,6 @@ func (e *VisitorEvalue) VisitFuncionReasign(ctx *parser.FuncionReasignContext) i
 		} else if newVal.isBool() {
 			e.currentScope.ReassignVariable(name, newVal, "Bool")
 		}
-
 	} else if e.currentScope.FindVariable(name) == nil {
 		println("error no existe variable")
 	}
@@ -205,12 +203,12 @@ func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructCont
 	var varsStruct []*Struct
 	dataStruct := e.Visit(ctx.StructAsig()).(returnStruct)
 	structCont:=e.currentScope.findStruct(dataStruct.name)
-
+	
 	for _,vars:=range dataStruct.variables{
-		for _,varsStruct:=range structCont.variables{
-			if !varsStruct.constante{
-				if vars.name == varsStruct.name{
-					if vars.tipo == varsStruct.tipo{
+		for _,varsS:=range structCont.variables{
+			if !varsS.constante{
+				if vars.name == varsS.name{
+					if vars.tipo == varsS.tipo{
 						datoVar:=NewAtributoVariable(vars.dato,vars.tipo,vars.constante)
 						datoVar.name=vars.name
 						variables = append(variables, datoVar)
@@ -219,12 +217,21 @@ func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructCont
 			}
 		}
 	}
+	for _,vars:=range dataStruct.structs{
+		varsStruct = append(varsStruct, vars)
+	}
+
 	for _,vars:=range structCont.variables{
 		if vars.constante {
 			variables = append(variables, vars)
 		}
 	}
-
+	for _,vars:=range structCont.structs{
+		if vars.constante {
+			varsStruct = append(varsStruct, vars)
+			
+		}
+	}
 	result:=NewStruct(funcs,variables,varsStruct)
 	e.currentScope.DeclareVarStruct(name,result)
 	return VOID

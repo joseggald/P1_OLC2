@@ -304,11 +304,23 @@ func (s *Scope) reasigVarStruct(name string,value *SwiftValue, atributo string){
 		for _, index := range s.varsStruct[name].variables{
 			if index.name == atributo{
 				index.dato=value
-			}
-			
+			}			
 		}
 	} else if s.parent != nil {
 		s.parent.reasigVarStruct(name,value,atributo)
 	}
+}
 
+func (s *Scope) verifyStructVar(name string, atributo string) *Struct{
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].structs{
+			if index.nameVar == atributo{
+				return index
+			}			
+		}
+	} else if s.parent != nil {
+		s.parent.verifyStructVar(name,atributo)
+	}
+	return nil
 }

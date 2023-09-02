@@ -10,7 +10,10 @@ type returnStruct struct{
 	variables []*AtributoVariable
 	structs []*Struct
 }
-
+type ExpStruct struct{
+	tipoStruct 	*Struct
+	tipoVariable *SwiftValue
+}
 func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContext) interface{} {
 	id := ctx.IdMayus().GetText()
 	var funcs []*FunctionStruct
@@ -23,6 +26,7 @@ func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContex
 	for _, index := range ctx.AllAtributosLista2() {
 		argValue := e.Visit(index).(*Struct)
 		varsStruct = append(varsStruct, argValue)
+		fmt.Println(argValue.nameVar)
 	}
 	dataStruct := NewStruct(funcs, variables,varsStruct)
 	e.globalScope.DeclareStruct(id, dataStruct)
@@ -93,57 +97,96 @@ func (e *VisitorEvalue) VisitDefStructExpression(ctx *parser.DefStructExpression
 }
 
 func (e *VisitorEvalue) VisitListAtibStruct(ctx *parser.ListAtibStructContext) interface{} {
+	
 	var atributos []*AtributoVariable
-	var value []*SwiftValue
-	var names []string
-	var tipos []string
-	for _, expr := range ctx.AllExpression() {
-		argValue := e.Visit(expr).(*SwiftValue)
-		value = append(value, argValue)
-		if argValue.isInt() {
-			tipos = append(tipos, "Int")
-		}else if argValue.isString() {
-			if argValue.isChar() {
-				tipos = append(tipos, "Char")
-			}else{
-				tipos = append(tipos, "String")
+	var varsStruct []*Struct
+
+	for i,id :=range ctx.AllTiposId(){
+		nom:=id.GetText()
+		data:=e.Visit(ctx.Expr_struct(i)).(ExpStruct)
+		if data.tipoStruct!=nil{
+			data.tipoStruct.nameVar=nom
+			varsStruct = append(varsStruct, data.tipoStruct)
+		}else if data.tipoVariable!=nil{
+			argValue:=data.tipoVariable
+			tipos:=""
+			if argValue.isInt() {
+				tipos = "Int"
+			}else if argValue.isString() {
+				if argValue.isChar() {
+					tipos = "Char"
+				}else{
+					tipos = "String"
+				}
+			}else if argValue.isBool() {
+				tipos =  "Bool"
+			}else if argValue.isDouble() {
+				tipos =  "Float"
 			}
-		}else if argValue.isBool() {
-			tipos = append(tipos, "Bool")
-		}else if argValue.isDouble() {
-			tipos = append(tipos, "Float")
+			dataVariable:=NewAtributoVariable(data.tipoVariable,tipos,false)
+			dataVariable.name=nom
+			atributos = append(atributos, dataVariable)
+
 		}
 	}
-	
-	for _,id :=range ctx.AllTiposId(){
-		nom:=id.GetText()
-		names = append(names, nom)
-	}
-	
-	for i := 0; i < len(names); i++ {
-		dato:=NewAtributoVariable(value[i],tipos[i],true)
-		dato.name=names[i]
-		atributos = append(atributos,dato)
-	}
-	
+
 	return returnStruct{
 		name:"",
 		variables: atributos,
+		structs: varsStruct,
 	}
+}
+
+func (e *VisitorEvalue) VisitRetornoExpStruct(ctx *parser.RetornoExpStructContext) interface{} {
+	if ctx.Expression() != nil {
+        // Si se encuentra una expresión, visitarla y obtener su valor
+        datoVar := e.Visit(ctx.Expression()).(*SwiftValue)
+        fmt.Println("Expresión encontrada")
+        return ExpStruct{
+            tipoVariable: datoVar,
+            tipoStruct:   nil, // Puedes establecerlo según tus necesidades
+        }
+    } else if ctx.StructAsig() != nil {
+        // Si se encuentra una asignación de estructura, visitarla y obtener su valor
+        datoStruct := e.Visit(ctx.StructAsig()).(returnStruct)
+        var funcs []*FunctionStruct
+        retStruct := NewStruct(funcs, datoStruct.variables, datoStruct.structs)
+        fmt.Println("Asignación de estructura encontrada")
+        return ExpStruct{
+            tipoVariable: nil, // Puedes establecerlo según tus necesidades
+            tipoStruct:   retStruct,
+        }
+    } else {
+        // Manejar otro caso si es necesario
+        return nil // Otra opción, dependiendo de tus necesidades
+    }
 }
 
 func (e *VisitorEvalue) VisitCallVarStructExpression(ctx *parser.CallVarStructExpressionContext) interface{} {
 	id:=ctx.TiposId(0).GetText()
 	atrib:=ctx.TiposId(1).GetText()
 	contenido:=e.currentScope.findVarStruct(id)
-	
+	contenido2:=e.currentScope.verifyStructVar(id,atrib)
 	if contenido!=nil{
-		for _,atributo := range contenido.variables{
-			fmt.Println(atributo.name)
-		}
-		for _,atributo := range contenido.variables{
-			if atributo.name==atrib{
-				return atributo.dato
+		if contenido2==nil{
+			for _,atributo := range contenido.variables{
+				fmt.Println(atributo.name)
+			}
+			for _,atributo := range contenido.variables{
+				if atributo.name==atrib{
+					return atributo.dato
+				}
+			}
+		}else{
+			
+			atrib2:=ctx.TiposId(2).GetText()
+			for _,atributo := range contenido2.variables{
+				fmt.Println(atributo.name)
+			}
+			for _,atributo := range contenido2.variables{
+				if atributo.name==atrib2{
+					return atributo.dato
+				}
 			}
 		}
 	}
@@ -166,6 +209,20 @@ func (e *VisitorEvalue) VisitFuncionReasigObj(ctx *parser.FuncionReasigObjContex
 }
 
 func (e *VisitorEvalue) VisitFuncionAtributosStruct(ctx *parser.FuncionAtributosStructContext) interface{} {
-		
-	return VOID
+	consta:=false
+	name:=ctx.IdMayus().GetText()
+	id_var:=ctx.TiposId().GetText()
+	cont:=e.currentScope.findStruct(name)
+	result:=NewStruct(cont.funciones,cont.variables,cont.structs)
+	result.nameVar=id_var
+	switch ctx.GetOp().GetTokenType() {
+	case parser.SwiftLanLexerVar:
+		consta = false
+	case parser.SwiftLanLexerLet:
+		consta = true
+	default:
+		return NULL
+	}
+	result.constante=consta
+	return result
 }

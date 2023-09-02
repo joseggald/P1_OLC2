@@ -1,0 +1,24 @@
+struct Persona{
+	var nombre: String
+	var edad = 0
+}
+struct Ciudad{
+	var nomCity: String
+	var pueblo:Bool
+}
+struct Estudiante{
+	var carnet:Int
+    let uni = "USAC"
+    var person:Persona
+    var region:Ciudad
+}
+
+var est1=Estudiante(carnet:202109732, person:
+                    Persona(nombre:"Jose",edad:20), 
+    region:Ciudad(nomCity:"Antigua Guatemala",pueblo:true))
+print(est1.carnet)
+print(est1.uni)
+print(est1.person.edad)
+print(est1.person.nombre)
+print(est1.region.nomCity)
+print(est1.region.pueblo)
