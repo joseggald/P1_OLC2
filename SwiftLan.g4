@@ -28,6 +28,10 @@ statement:
 	| matrizAsign
 	| reasigMatriz
 	| defStruct
+	| structObj
+;
+
+structObj: tiposId '.' tiposId '=' expression 			# FuncionReasigObj
 ;
 
 reasigMatriz: Id '[' expression ']' '[' expression ']' '=' expression		# FuncionReasignMatriz
@@ -41,12 +45,14 @@ matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla '
 expression ')' ','  COUNT ':' expression')' ',' COUNT ':' expression ')'  # FuncionAsignarM3D
 ;
 
-defStruct: STRUCT IdMayus '{' (atributosLista)*  '}' # FuncionDefStruct
+defStruct: STRUCT IdMayus '{' (atributosLista| atributosLista2)*  '}' # FuncionDefStruct
 ;
 
-atributosLista:	op=(Let|Var) (Id|IdMayus) (':' tiposAsign) # FuncionAtributosListTipo
-| op=(Let|Var) (Id|IdMayus) ('=' expression) 	# FuncionAtributosListExp
-| op=(Let|Var) (Id|IdMayus)  ':' tiposAsign '=' Id '(' exprListStruct ')'	# FuncionAtributosStruct
+atributosLista2: op=(Let|Var) tiposId  ':' tiposAsign '=' structAsig	# FuncionAtributosStruct
+;
+
+atributosLista:	op=(Let|Var) tiposId (':' tiposAsign) # FuncionAtributosListTipo
+| op=(Let|Var) tiposId ('=' expression) 	# FuncionAtributosListExp
 ;
 
 incremento: (Id|IdMayus) '+''=' expression # FuncionIncremento
@@ -115,7 +121,8 @@ elsestmt:ELSE '{' sentencias (breakstmt|retStmt)? '}'
 ;
 
 retStmt: RETURN expression # FuncionReturnVal
-| RETURN # FuncionReturnVoid
+| RETURN  # FuncionReturnVoid
+| RETURN  structAsig # FuncionReturnStruct
 ;
 
 breakstmt: BREAK # FuncionBreak
@@ -188,7 +195,7 @@ expression:
 	| tiposId '[' expression ']'								 	# vecCallExpression
 	| tiposId '[' expression ']' '[' expression ']'				# matrizCallExpression
 	| tiposId '[' expression ']' '[' expression ']' '[' expression ']'	# matriz3DCallExpression
-	| tiposId '.' tiposId									# structExpression
+	| tiposId '.' tiposId									# callVarStructExpression
 ;
 
 //Reservadas

@@ -15,13 +15,16 @@ func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContex
 	id := ctx.IdMayus().GetText()
 	var funcs []*FunctionStruct
 	var variables []*AtributoVariable
-	fmt.Println(id)
+	var varsStruct []*Struct
 	for _, index := range ctx.AllAtributosLista() {
 		argValue := e.Visit(index).(*AtributoVariable)
-		fmt.Println(argValue.name)
 		variables = append(variables, argValue)
 	}
-	dataStruct := NewStruct(funcs, variables)
+	for _, index := range ctx.AllAtributosLista2() {
+		argValue := e.Visit(index).(*Struct)
+		varsStruct = append(varsStruct, argValue)
+	}
+	dataStruct := NewStruct(funcs, variables,varsStruct)
 	e.globalScope.DeclareStruct(id, dataStruct)
 
 	return VOID
@@ -29,12 +32,7 @@ func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContex
 
 func (e *VisitorEvalue) VisitFuncionAtributosListTipo(ctx *parser.FuncionAtributosListTipoContext) interface{} {
 	consta:= false
-	var id string
-	if ctx.Id() != nil {
-		id = ctx.Id().GetText()
-	} else if ctx.IdMayus() != nil {
-		id = ctx.IdMayus().GetText()
-	}
+	id:= ctx.TiposId().GetText()
 	tipo := ctx.TiposAsign().GetText()
 	var dato *SwiftValue
 	switch ctx.GetOp().GetTokenType() {
@@ -53,12 +51,8 @@ func (e *VisitorEvalue) VisitFuncionAtributosListTipo(ctx *parser.FuncionAtribut
 
 func (e *VisitorEvalue) VisitFuncionAtributosListExp(ctx *parser.FuncionAtributosListExpContext) interface{} {
 	consta:= false
-	var id string
-	if ctx.Id() != nil {
-		id = ctx.Id().GetText()
-	} else if ctx.IdMayus() != nil {
-		id = ctx.IdMayus().GetText()
-	}
+	id:= ctx.TiposId().GetText()
+	
 	value:=e.Visit(ctx.Expression())
 	dato:=value.(*SwiftValue)
 	tipo:=""
@@ -90,9 +84,7 @@ func (e *VisitorEvalue) VisitFuncionAtributosListExp(ctx *parser.FuncionAtributo
 
 func (e *VisitorEvalue) VisitDefStructExpression(ctx *parser.DefStructExpressionContext) interface{} {
 	name:=ctx.IdMayus().GetText()
-	fmt.Println(name)
 	data:=e.Visit(ctx.ExprListStruct()).(returnStruct)
-	fmt.Println(data.name)
 	return returnStruct{
 		name:name,
 		variables:data.variables,
@@ -102,12 +94,10 @@ func (e *VisitorEvalue) VisitDefStructExpression(ctx *parser.DefStructExpression
 
 func (e *VisitorEvalue) VisitListAtibStruct(ctx *parser.ListAtibStructContext) interface{} {
 	var atributos []*AtributoVariable
-	var atributosStructs []*Struct
 	var value []*SwiftValue
 	var names []string
 	var tipos []string
 	for _, expr := range ctx.AllExpression() {
-		fmt.Println(e.Visit(expr))
 		argValue := e.Visit(expr).(*SwiftValue)
 		value = append(value, argValue)
 		if argValue.isInt() {
@@ -130,21 +120,52 @@ func (e *VisitorEvalue) VisitListAtibStruct(ctx *parser.ListAtibStructContext) i
 		names = append(names, nom)
 	}
 	
-	for _, structs := range ctx.AllStructAsig(){
-		structValue:=e.Visit(structs).(*Struct)
-		atributosStructs = append(atributosStructs, structValue)
-	}
-	
 	for i := 0; i < len(names); i++ {
 		dato:=NewAtributoVariable(value[i],tipos[i],true)
 		dato.name=names[i]
 		atributos = append(atributos,dato)
 	}
-
+	
 	return returnStruct{
-		name:"ola",
+		name:"",
 		variables: atributos,
-		structs:atributosStructs,
 	}
 }
 
+func (e *VisitorEvalue) VisitCallVarStructExpression(ctx *parser.CallVarStructExpressionContext) interface{} {
+	id:=ctx.TiposId(0).GetText()
+	atrib:=ctx.TiposId(1).GetText()
+	contenido:=e.currentScope.findVarStruct(id)
+	
+	if contenido!=nil{
+		for _,atributo := range contenido.variables{
+			fmt.Println(atributo.name)
+		}
+		for _,atributo := range contenido.variables{
+			if atributo.name==atrib{
+				return atributo.dato
+			}
+		}
+	}
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitFuncionReasigObj(ctx *parser.FuncionReasigObjContext) interface{} {
+	id:=ctx.TiposId(0).GetText()
+	atrib:=ctx.TiposId(1).GetText()
+	contenido:=e.currentScope.findVarStruct(id)
+	value:=e.Visit(ctx.Expression()).(*SwiftValue)
+	if contenido!=nil{
+		for _,atributo := range contenido.variables{
+			if atributo.name==atrib{
+				e.currentScope.reasigVarStruct(id,value,atrib)
+			}
+		}
+	}
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitFuncionAtributosStruct(ctx *parser.FuncionAtributosStructContext) interface{} {
+		
+	return VOID
+}

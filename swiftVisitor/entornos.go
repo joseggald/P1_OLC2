@@ -287,3 +287,28 @@ func (s *Scope) DeclareVarStruct(name string, value *Struct) {
 		fmt.Println(s.varsStruct[name].variables[0].dato.value)
 	}
 }
+
+func (s *Scope) findVarStruct(name string) *Struct{
+	cont, exists := s.varsStruct[name]
+	if exists {
+		return cont
+	} else if s.parent != nil {
+		return s.parent.findStruct(name)
+	}
+	return nil
+}
+
+func (s *Scope) reasigVarStruct(name string,value *SwiftValue, atributo string){
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].variables{
+			if index.name == atributo{
+				index.dato=value
+			}
+			
+		}
+	} else if s.parent != nil {
+		s.parent.reasigVarStruct(name,value,atributo)
+	}
+
+}

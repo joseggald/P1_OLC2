@@ -1,0 +1,17 @@
+struct Persona{
+	let tipo="Humano"
+    var nombre: String
+    var edad: Int
+}
+
+var person = Persona(nombre:"Jose", edad:20)
+print(person.tipo)
+print(person.nombre)
+print(person.edad)
+
+person.nombre="Eduardo"
+person.edad=45
+
+print(person.tipo)
+print(person.nombre)
+print(person.edad)

@@ -198,10 +198,11 @@ func (e *VisitorEvalue) VisitFuncionReasign(ctx *parser.FuncionReasignContext) i
 
 func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructContext) interface{} {
 	fmt.Printf("Entro Funcion Asignar Struct\n")
-	var name string
-	name=ctx.TiposId().GetText()
+
+	name:=ctx.TiposId().GetText()
 	var variables []*AtributoVariable
 	var funcs []*FunctionStruct
+	var varsStruct []*Struct
 	dataStruct := e.Visit(ctx.StructAsig()).(returnStruct)
 	structCont:=e.currentScope.findStruct(dataStruct.name)
 
@@ -210,7 +211,7 @@ func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructCont
 			if !varsStruct.constante{
 				if vars.name == varsStruct.name{
 					if vars.tipo == varsStruct.tipo{
-						datoVar:=NewAtributoVariable(vars.dato,vars.tipo,false)
+						datoVar:=NewAtributoVariable(vars.dato,vars.tipo,vars.constante)
 						datoVar.name=vars.name
 						variables = append(variables, datoVar)
 					}
@@ -218,7 +219,13 @@ func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructCont
 			}
 		}
 	}
-	result:=NewStruct(funcs,variables)
+	for _,vars:=range structCont.variables{
+		if vars.constante {
+			variables = append(variables, vars)
+		}
+	}
+
+	result:=NewStruct(funcs,variables,varsStruct)
 	e.currentScope.DeclareVarStruct(name,result)
 	return VOID
 }

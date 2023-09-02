@@ -63,8 +63,8 @@ func (e *VisitorEvalue) VisitFuncionAppendVector(ctx *parser.FuncionAppendVector
 }
 
 func (e *VisitorEvalue) VisitFuncionRemoveLastVec(ctx *parser.FuncionRemoveLastVecContext) interface{} {
-	var id string
-	id = ctx.TiposId().GetText()
+
+	id := ctx.TiposId().GetText()
 	cont := e.currentScope.FindVector(id)
 	if cont != nil {
 		e.currentScope.DelVector(id, len(cont.datos)-1)
@@ -110,8 +110,7 @@ func (e *VisitorEvalue) VisitVecCallExpression(ctx *parser.VecCallExpressionCont
 
 func (e *VisitorEvalue) VisitFuncionVecReasig(ctx *parser.FuncionVecReasigContext) interface{} {
 	fmt.Printf("Enter - Vector Expression Statement\n")
-	var id string
-	id = ctx.TiposId().GetText()
+	id := ctx.TiposId().GetText()
 	cont := e.currentScope.FindVector(id)
 	pos := e.Visit(ctx.Expression(0)).(*SwiftValue)
 	dataReasig := e.Visit(ctx.Expression(1)).(*SwiftValue)
