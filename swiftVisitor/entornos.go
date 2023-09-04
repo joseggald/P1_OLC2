@@ -13,7 +13,7 @@ type Scope struct {
 	matrices           map[string]*Matrix
 	matrices3D         map[string]*Matrix3D
 	structs            map[string]*Struct
-	varsStruct			map[string]*Struct
+	varsStruct         map[string]*Struct
 }
 
 func NewScope() *Scope {
@@ -25,7 +25,7 @@ func NewScope() *Scope {
 		vectores:           map[string]*Vector{},
 		matrices:           map[string]*Matrix{},
 		matrices3D:         map[string]*Matrix3D{},
-		structs:         	map[string]*Struct{},
+		structs:            map[string]*Struct{},
 		varsStruct:         map[string]*Struct{},
 	}
 }
@@ -37,52 +37,38 @@ func (s *Scope) CreateChildScope() *Scope {
 }
 
 func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, constante bool) {
-	if value.isInt() {
-		if tipo == "Int" {
+
+	if value.isNumber() {
+		if tipo == "Int" || tipo == "Float" {
 			s.variables[name] = value
 			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
-			return
 		} else {
 			println("error de tipado")
 		}
-	}
-	if value.isBool() {
+	} else if value.isBool() {
 		if tipo == "Bool" {
 			s.variables[name] = value
 			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
-			return
 		} else {
 			println("error de tipado")
 		}
-	}
-	if value.isNumber() {
-		if tipo == "Float" {
-			s.variables[name] = value
-			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
-			return
-		} else {
-			println("error de tipado")
-		}
-	}
-	if value.isString() {
+	} else if value.isString() {
 		if tipo == "String" {
 			s.variables[name] = value
 			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
-			return
 		} else {
 			println("error de tipado")
 		}
-	}
-	if value.isChar() {
+	} else if value.isChar() {
 		if tipo == "Char" {
 			s.variables[name] = value
 			s.variablesAtributos[name] = NewAtributoVariable(value, tipo, constante)
-			return
 		} else {
 			println("error de tipado")
 		}
 	}
 }
+
 func (s *Scope) DeclareVariableNil(name string, value *SwiftValue, tipo string, constante bool) {
 	_, exists := s.variables[name]
 	if exists {
@@ -95,20 +81,14 @@ func (s *Scope) DeclareVariableNil(name string, value *SwiftValue, tipo string, 
 
 func (s *Scope) ReassignVariable(name string, value *SwiftValue, tipo string) {
 	varValue := s.variablesAtributos[name]
-	if !varValue.constante {
-		if _, exists := s.variables[name]; exists {
-			if tipo == varValue.tipo {
-				s.variables[name] = value
-			} else if tipo == "Int" && varValue.tipo == "Float" {
-				s.variables[name] = value
-			} else {
-				println("error de reasignación tipado")
-			}
-		} else if s.parent != nil {
-			s.parent.ReassignVariable(name, value, tipo)
+	_, exists := s.variables[name]
+	if exists {
+		if !varValue.constante {
+			s.variablesAtributos[name].dato = value
+			s.variables[name]=value
 		}
-	} else {
-		println("error es constante no puede reasignar")
+	} else if s.parent != nil {
+		s.parent.ReassignVariable(name, value, tipo)
 	}
 
 }
@@ -233,12 +213,12 @@ func (s *Scope) ReasignMatriz3D(name string, row, col, depth int, value *SwiftVa
 	_, exists := s.matrices3D[name]
 	if exists {
 		s.matrices3D[name].SetValue(row, col, depth, value)
-	} else if s.parent != nil { 
+	} else if s.parent != nil {
 		s.parent.ReasignMatriz3D(name, row, col, depth, value)
 	}
 }
 
-func (s *Scope) findMatriz(name string) *Matrix{
+func (s *Scope) findMatriz(name string) *Matrix {
 	cont, exists := s.matrices[name]
 	if exists {
 		return cont
@@ -248,7 +228,7 @@ func (s *Scope) findMatriz(name string) *Matrix{
 	return nil
 }
 
-func (s *Scope) findMatriz3D(name string) *Matrix3D{
+func (s *Scope) findMatriz3D(name string) *Matrix3D {
 	cont, exists := s.matrices3D[name]
 	if exists {
 		return cont
@@ -267,7 +247,7 @@ func (s *Scope) DeclareStruct(name string, value *Struct) {
 	}
 }
 
-func (s *Scope) findStruct(name string) *Struct{
+func (s *Scope) findStruct(name string) *Struct {
 	cont, exists := s.structs[name]
 	if exists {
 		return cont
@@ -288,7 +268,7 @@ func (s *Scope) DeclareVarStruct(name string, value *Struct) {
 	}
 }
 
-func (s *Scope) findVarStruct(name string) *Struct{
+func (s *Scope) findVarStruct(name string) *Struct {
 	cont, exists := s.varsStruct[name]
 	if exists {
 		return cont
@@ -298,29 +278,47 @@ func (s *Scope) findVarStruct(name string) *Struct{
 	return nil
 }
 
-func (s *Scope) reasigVarStruct(name string,value *SwiftValue, atributo string){
+func (s *Scope) reasigVarStruct(name string, value *SwiftValue, atributo string) {
 	_, exists := s.varsStruct[name]
 	if exists {
-		for _, index := range s.varsStruct[name].variables{
-			if index.name == atributo{
-				index.dato=value
-			}			
+		for _, index := range s.varsStruct[name].variables {
+			if index.name == atributo {
+				fmt.Println("llego2")
+				index.dato = value
+			}
 		}
 	} else if s.parent != nil {
-		s.parent.reasigVarStruct(name,value,atributo)
+		s.parent.reasigVarStruct(name, value, atributo)
 	}
 }
 
-func (s *Scope) verifyStructVar(name string, atributo string) *Struct{
+func (s *Scope) reasigVarStruct2(name string, value *SwiftValue, atributo, atributo2 string) {
 	_, exists := s.varsStruct[name]
 	if exists {
-		for _, index := range s.varsStruct[name].structs{
-			if index.nameVar == atributo{
-				return index
-			}			
+		for _, index := range s.varsStruct[name].structs {
+			if index.nameVar == atributo {
+				for _, vars := range index.variables {
+					if vars.name == atributo2 {
+						vars.dato = value
+					}
+				}
+			}
 		}
 	} else if s.parent != nil {
-		s.parent.verifyStructVar(name,atributo)
+		s.parent.reasigVarStruct(name, value, atributo)
+	}
+}
+
+func (s *Scope) verifyStructVar(name string, atributo string) *Struct {
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].structs {
+			if index.nameVar == atributo {
+				return index
+			}
+		}
+	} else if s.parent != nil {
+		s.parent.verifyStructVar(name, atributo)
 	}
 	return nil
 }

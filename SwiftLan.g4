@@ -33,10 +33,10 @@ statement:
 ;
 
 //Declaracion varaibles, vectores, matrices,funciones y structs.
-asignacion: tipoInit tiposId '=' structAsig # funcionAsigStruct
-	| tipoInit tiposId ':' tiposAsign '=' expression # funcionAsigTipoExp
-	| tipoInit tiposId  ':' tiposAsign '?' # funcionAsigTipoNil
-	| tipoInit tiposId  '=' expression 	# funcionAsigExp;
+asignacion: op=(Let|Var) tiposId '=' structAsig # funcionAsigStruct
+	| op=(Let|Var) tiposId ':' tiposAsign '=' expression # funcionAsigTipoExp
+	| op=(Let|Var) tiposId  ':' tiposAsign '?' # funcionAsigTipoNil
+	| op=(Let|Var) tiposId  '=' expression 	# funcionAsigExp;
 
 matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla ']' 			# FuncionAsignarMatrizNormal
 |	Var Id ':' '[' '[''['  tiposAsign ']' ']' ']' '=' '[' ( '[' exprListMatrixDecla ']' )* ']' 	# FuncionAsignarMatriz3D
@@ -47,16 +47,18 @@ expression ')' ','  COUNT ':' expression')' ',' COUNT ':' expression ')'  # Func
 defStruct: STRUCT IdMayus '{' (atributosLista| atributosLista2)*  '}' # FuncionDefStruct;
 
 vectorAsign: Var tiposId ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # FuncionVectorAsig
-	| Var tiposId ':' '[' tiposAsign ']' '=' tiposId # FuncionVectorAsigVar;
+	| Var tiposId ':' '[' tiposAsign ']' '=' tiposId # FuncionVectorAsigVar
+	| Var tiposId '=' '[' IdMayus ']' '(' ')' # FuncionVectorAsigVarStruct
+	| Var tiposId '=' '[' structAsig (',' structAsig)* ']' # FuncionVectorAsigVarObjs;
 
 funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentencias '}' # FuncionDeclaFunc
 	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentencias '}' # FuncionDeclaFunc2;
 
 
 //Manejo de Variables
-reasignacion: (Id|IdMayus) '=' expression # FuncionReasign;
-incremento: (Id|IdMayus) '+''=' expression # FuncionIncremento;
-decremento: (Id|IdMayus) '-''=' expression # FuncionDecremento;
+reasignacion: tiposId '=' expression # FuncionReasign;
+incremento: tiposId '+''=' expression # FuncionIncremento;
+decremento: tiposId '-''=' expression # FuncionDecremento;
 tipoInit: Var |
 Let;
 tiposAsign:
@@ -98,16 +100,18 @@ appendVec: tiposId '.'APEND '('expression')' # FuncionAppendVector;
 
 //Struct
 structAsig: IdMayus '(' (exprListStruct) ')'						# defStructExpression;
-structObj: tiposId '.' tiposId '=' expression 			# FuncionReasigObj;
+structObj: tiposId ('.' tiposId)+ '=' expression 			# FuncionReasigObj;
 atributosLista2: op=(Let|Var) tiposId  ':' IdMayus	# FuncionAtributosStruct;
 atributosLista:	op=(Let|Var) tiposId (':' tiposAsign) # FuncionAtributosListTipo
 | op=(Let|Var) tiposId ('=' expression) 	# FuncionAtributosListExp;
 
 //Ciclos
-forstmt: FOR tiposId  'in' EnteroRange '{' sentencias '}' # FuncionForstmt
+forstmt: FOR (tiposId|'_')  'in' EnteroRange (expression)'{' sentencias '}' # FuncionForstmt
 | FOR tiposId  'in' String '{' sentencias '}' # FuncionForExpstmt
 |  FOR tiposId 'in' tiposId '{' sentencias '}' # FuncionForIdstmt;
-EnteroRange: (Entero|Id|IdMayus) RANGE (Entero|Id|IdMayus);
+
+EnteroRange: (Number|Id|IdMayus) RANGE ;
+EnteroRange2: (Number|Id|IdMayus) RANGE (Number);
 whilestmt: WHILE expression '{' sentencias '}' # FuncionWhilestmt;
 switchstmt: SWITCH expression '{' (bloqueCase)* DEFAULT ':' (sentencias)? '}' # FuncionSwitchstmt;
 bloqueCase: CASE expression ':' (sentencias)?;
@@ -129,12 +133,16 @@ continuestmt: CONTINUE # FuncionContinue;
 
 //Area de expresiones y funciones ya definidas
 fPrint:
-	Print '(' expression? ')'	# funcionPrint
+	Print '(' (expression|concaExp) ')'	# funcionPrint
 ;
+
+concaExp: expression  (',' expression)+							# concatenarExpression;
+
 tiposId:Id
 |IdMayus;
-expression:
-	'-' expression											# funcionUnariaExp
+
+expression: '!' expression										# funcionNot
+	| '-' expression											# funcionUnariaExp
 	| <assoc = right> expression '^' expression				# funcionPowExp
 	| expression op = ('*' | '/' | '%') expression			# expressionMultDivMod
 	| expression op = ('+' | '-') expression				# expressionSumRes
@@ -144,8 +152,7 @@ expression:
 	| expression '||' expression							# funcionOrExp
 	| expression '?' expression ':' expression				# funcionTernaryExp
 	| Nil													# nilExpression
-	| Float													# floatExpression
-	| Entero												# enteroExpression
+	| Number												# numberExpression
 	| BoolVal												# boolExpression
 	| Id													# idExpression
 	| String												# stringExpression								
@@ -157,6 +164,7 @@ expression:
 	| tiposId '[' expression ']' '[' expression ']'				# matrizCallExpression
 	| tiposId '[' expression ']' '[' expression ']' '[' expression ']'	# matriz3DCallExpression
 	| tiposId ('.' tiposId)+								# callVarStructExpression
+	| tiposAsign '(' expression ')'										# funcionesEmbeExpression
 ;
 
 //Reservadas
@@ -191,8 +199,8 @@ REPEATING:'repeating';
 
 //Valores
 BoolVal: 'true' | 'false';
-Float: [0-9]+ '.' Digit*;
-Entero: [0-9]+;
+Number: Int ( '.' Digit*)?;
+entero: Int (Int*);
 Nil:'nil';
 Id: [a-z][a-zA-Z_0-9]*;
 IdMayus: [A-Z][a-zA-Z_0-9]*;

@@ -93,7 +93,14 @@ func (e *VisitorEvalue) VisitFuncionPrint(ctx *parser.FuncionPrintContext) inter
 		} else {
 			out = out + a.String() + "\n"
 		}
-
+	}
+	if expr := ctx.ConcaExp(); expr != nil {
+		a := e.Visit(expr).(*SwiftValue)
+		if a == NULL {
+			out = out + "nil" + "\n"
+		} else {
+			out = out + a.String() + "\n"
+		}
 	}
 	return VOID
 }

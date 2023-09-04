@@ -8,12 +8,7 @@ import (
 func (e *VisitorEvalue) VisitFuncionIncremento(ctx *parser.FuncionIncrementoContext) interface{} {
 	fmt.Printf("Entro FuncionIncremento\n")
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	var name string
-	if ctx.Id() != nil {
-		name = ctx.Id().GetText()
-	} else if ctx.IdMayus() != nil {
-		name = ctx.IdMayus().GetText()
-	}
+	name:= ctx.TiposId().GetText()
 	a := e.currentScope.FindVariable(name)
 	if a != VOID {
 		if newVal.isInt() {
@@ -41,12 +36,7 @@ func (e *VisitorEvalue) VisitFuncionIncremento(ctx *parser.FuncionIncrementoCont
 func (e *VisitorEvalue) VisitFuncionDecremento(ctx *parser.FuncionDecrementoContext) interface{} {
 	fmt.Printf("Entro FuncionIncremento\n")
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	var name string
-	if ctx.Id() != nil {
-		name = ctx.Id().GetText()
-	} else if ctx.IdMayus() != nil {
-		name = ctx.IdMayus().GetText()
-	}
+	name:= ctx.TiposId().GetText()
 	a := e.currentScope.FindVariable(name)
 	if a != VOID {
 		if newVal.isInt() {
@@ -73,35 +63,52 @@ func (e *VisitorEvalue) VisitFuncionAsigExp(ctx *parser.FuncionAsigExpContext) i
 	fmt.Printf("Entro FuncionAsigExp\n")
 	c := false
 	var name string
-	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	name=ctx.TiposId().GetText()
-	cons := ctx.TipoInit().GetText()
-	if cons == "let" {
-		c = true
+	Val := e.Visit(ctx.Expression())
+	newVal:=Val.(*SwiftValue)
+	var dataStr *Struct
+	if newVal.isString(){
+		dataStr=e.currentScope.findVarStruct(newVal.asString())
 	}
-	if newVal.isInt() {
-		e.currentScope.DeclareVariable(name, newVal, "Int", c)
-	} else if newVal.isBool() {
-		e.currentScope.DeclareVariable(name, newVal, "Bool", c)
-	} else if newVal.isString() {
-		e.currentScope.DeclareVariable(name, newVal, "String", c)
-	} else if newVal.isNumber() {
-		e.currentScope.DeclareVariable(name, newVal, "Float", c)
+	if dataStr!=nil{
+		e.currentScope.DeclareVarStruct(name,dataStr)
+		return VOID
+	}else{
+		name=ctx.TiposId().GetText()
+		switch ctx.GetOp().GetTokenType() {
+		case parser.SwiftLanLexerVar:
+			c = false
+		case parser.SwiftLanLexerLet:
+			c = true
+		default:
+			return NULL
+		}
+		if newVal.isInt() {
+			e.currentScope.DeclareVariable(name, newVal, "Int", c)
+		} else if newVal.isBool() {
+			e.currentScope.DeclareVariable(name, newVal, "Bool", c)
+		} else if newVal.isString() {
+			e.currentScope.DeclareVariable(name, newVal, "String", c)
+		} else if newVal.isNumber() {
+			e.currentScope.DeclareVariable(name, newVal, "Float", c)
+		}
 	}
-
-	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v Valor: %v\n", name, newVal.value)
+	
+	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v", name)
 	return VOID
 }
 
 func (e *VisitorEvalue) VisitFuncionAsigTipoNil(ctx *parser.FuncionAsigTipoNilContext) interface{} {
 	fmt.Printf("Entro FuncionAsigNilExp\n")
 	newVal := NULL
-	var name string
-	name=ctx.TiposId().GetText()
+	name:=ctx.TiposId().GetText()
 	c := false
-	cons := ctx.TipoInit().GetText()
-	if cons == "let" {
+	switch ctx.GetOp().GetTokenType() {
+	case parser.SwiftLanLexerVar:
+		c = false
+	case parser.SwiftLanLexerLet:
 		c = true
+	default:
+		return NULL
 	}
 	e.currentScope.DeclareVariableNil(name, newVal, ctx.TiposAsign().GetText(), c)
 	fmt.Printf("En FuncionAsigExp - Nombre Variable: %v \n", name)
@@ -115,9 +122,13 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpCo
 	name:=ctx.TiposId().GetText()
 	existe := e.currentScope.FindVariable(name)
 	c := false
-	cons := ctx.TipoInit().GetText()
-	if cons == "let" {
+	switch ctx.GetOp().GetTokenType() {
+	case parser.SwiftLanLexerVar:
+		c = false
+	case parser.SwiftLanLexerLet:
 		c = true
+	default:
+		return NULL
 	}
 	if existe != VOID {
 		fmt.Printf("Variable '%v' ya existe en el ámbito actual o en ámbitos padres.\n", name)
@@ -137,21 +148,14 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpCo
 				}
 			}
 
-		} else if valVar.isInt() {
-			if ctx.TiposAsign().GetText() == "Int" {
+		} else if valVar.isNumber() {
+			if ctx.TiposAsign().GetText() == "Int" || ctx.TiposAsign().GetText() == "Float" {
 				e.currentScope.DeclareVariable(name, valVar, ctx.TiposAsign().GetText(), c)
 				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
-			} else {
+			}else {
 				fmt.Println("Error")
 			}
-		} else if valVar.isDouble() {
-			if ctx.TiposAsign().GetText() == "Float" {
-				e.currentScope.DeclareVariable(name, valVar, ctx.TiposAsign().GetText(), c)
-				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
-			} else {
-				fmt.Println("Error")
-			}
-		} else if valVar.isBool() {
+		}else if valVar.isBool() {
 			if ctx.TiposAsign().GetText() == "Bool" {
 				e.currentScope.DeclareVariable(name, valVar, ctx.TiposAsign().GetText(), c)
 				fmt.Printf("En FuncionAsigTipoExp - Nombre Variable: %v Valor: %v\n", name, valVar.value)
@@ -167,26 +171,27 @@ func (e *VisitorEvalue) VisitFuncionAsigTipoExp(ctx *parser.FuncionAsigTipoExpCo
 
 func (e *VisitorEvalue) VisitFuncionReasign(ctx *parser.FuncionReasignContext) interface{} {
 	fmt.Printf("Entro FuncionReasign\n")
-
 	newVal := e.Visit(ctx.Expression()).(*SwiftValue)
-	var name string
-	if ctx.Id() != nil {
-		name = ctx.Id().GetText()
-	} else if ctx.IdMayus() != nil {
-		name = ctx.IdMayus().GetText()
-	}
+	name:= ctx.TiposId().GetText()
 	a := e.currentScope.FindVariable(name)
+
 	if a != VOID {
-		if newVal.isInt() {
-			e.currentScope.ReassignVariable(name, newVal, "Int")
-		} else if newVal.isString() {
-			e.currentScope.ReassignVariable(name, newVal, "String")
-		} else if newVal.isDouble() {
-			e.currentScope.ReassignVariable(name, newVal, "Float")
-		} else if newVal.isBool() {
+		fmt.Println("entro")
+		if newVal.isNumber() {
+			fmt.Println("lo envio")
+			e.currentScope.ReassignVariable(name, newVal,"Int")
+			fmt.Println("regreso")
+		}else if newVal.isString() {
+			if newVal.isChar(){
+				e.currentScope.ReassignVariable(name, newVal, "Char")
+			}else{
+				e.currentScope.ReassignVariable(name, newVal, "String")
+			}
+		}else if newVal.isBool() {
 			e.currentScope.ReassignVariable(name, newVal, "Bool")
 		}
-	} else if e.currentScope.FindVariable(name) == nil {
+
+	} else if e.currentScope.FindVariable(name) == VOID {
 		println("error no existe variable")
 	}
 	fmt.Printf("En FuncionAsigStruct - Nombre Variable: %v Valor: %v\n", name, newVal.value)

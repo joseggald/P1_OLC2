@@ -12,12 +12,10 @@ func (e *VisitorEvalue) VisitFuncionForstmt(ctx *parser.FuncionForstmtContext) i
 	rango := ctx.EnteroRange().GetText()
 	parts := strings.Split(rango, "...")
 	fmt.Println(parts[0])
-	fmt.Println(parts[1])
 	var start int
 	var end int
 	a := e.currentScope.FindVariable(parts[0])
-	b := e.currentScope.FindVariable(parts[1])
-
+	b := e.Visit(ctx.Expression()).(*SwiftValue)
 	if a != VOID {
 		dat := a.asInt()
 		fmt.Println(dat)
@@ -38,8 +36,15 @@ func (e *VisitorEvalue) VisitFuncionForstmt(ctx *parser.FuncionForstmtContext) i
 	}
 
 	forScope := e.currentScope.CreateChildScope()
-	id := ctx.TiposId().GetText()
+	var id string
+	if ctx.TiposId() != nil {
+		id = ctx.TiposId().GetText()
+	} else {
+		fmt.Println("salto")
+		id = ""
+	}
 
+	forScope.DeclareVariable(id, &SwiftValue{value: start}, "Int", false)
 	for i := start; i <= end; i++ {
 		loopVarValue := &SwiftValue{value: i}
 		forScope.DeclareVariable(id, loopVarValue, "Int", false)
@@ -56,6 +61,7 @@ func (e *VisitorEvalue) VisitFuncionForstmt(ctx *parser.FuncionForstmtContext) i
 
 	return VOID
 }
+
 func (e *VisitorEvalue) VisitFuncionWhilestmt(ctx *parser.FuncionWhilestmtContext) interface{} {
 	fmt.Printf("Enter - While Statement\n")
 	whileScope := e.currentScope.CreateChildScope()
@@ -148,9 +154,9 @@ func (e *VisitorEvalue) VisitFuncionForIdstmt(ctx *parser.FuncionForIdstmtContex
 		tipo := e.currentScope.FindTypeVector(dataEnd)
 		for i := start; i <= end; i++ {
 			loopVarValue := a.datos[i]
-			if i==0{
+			if i == 0 {
 				forScope.DeclareVariable(id, loopVarValue, tipo, false)
-			}else{
+			} else {
 				forScope.ReassignVariable(id, loopVarValue, tipo)
 			}
 			evalVisitor := &VisitorEvalue{currentScope: forScope, globalScope: e.currentScope}

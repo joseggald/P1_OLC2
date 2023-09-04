@@ -94,8 +94,8 @@ func (e *VisitorEvalue) VisitFuncionVectorAsigVar(ctx *parser.FuncionVectorAsigV
 
 func (e *VisitorEvalue) VisitVecCallExpression(ctx *parser.VecCallExpressionContext) interface{} {
 	fmt.Printf("Enter - Vector Expression Statement\n")
-	var id string
-	id = ctx.TiposId().GetText()
+	
+	id := ctx.TiposId().GetText()
 	cont := e.currentScope.FindVector(id)
 	pos := e.Visit(ctx.Expression()).(*SwiftValue)
 	var dato interface{}
@@ -153,4 +153,9 @@ func getValueType(value string) string {
 
 	// Si no es ningún tipo conocido, entonces considerarlo como string
 	return "String"
+}
+
+func (e *VisitorEvalue) VisitFuncionVectorAsigVarStruct(ctx *parser.FuncionVectorAsigVarStructContext) interface{} {
+
+	return VOID
 }

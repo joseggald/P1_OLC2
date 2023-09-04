@@ -8,14 +8,52 @@ import (
 	"strings"
 )
 
+func (e *VisitorEvalue) VisitFuncionesEmbeExpression(ctx *parser.FuncionesEmbeExpressionContext) interface{} {
+	tipo := ctx.TiposAsign().GetText()
+	data := e.Visit(ctx.Expression()).(*SwiftValue)
+	if tipo == "Int" {
+		if data.isString() {
+			num, _ := strconv.Atoi(data.asString())
+			return &SwiftValue{num}
+		} else if data.isDouble() {
+			intNum := int(math.Round(data.asDouble()))
+			return &SwiftValue{intNum}
+		}
+	} else if tipo == "String" {
+		strNum := data.String()
+		return &SwiftValue{strNum}
+	}else if tipo == "Float" {
+		if data.isNumber(){
+			return &SwiftValue{float64(data.asInt())}
+		}else if data.isString(){
+			numeroDecimal, _ := strconv.ParseFloat(data.asString(), 64)
+			return &SwiftValue{numeroDecimal}
+		}
+	}
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitExpressionExpression(ctx *parser.ExpressionExpressionContext) interface{} {
+	fmt.Printf("Enter - Expression Expression\n")
+	val := e.Visit(ctx.Expression())
+	return val.(*SwiftValue)
+}
+
 func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) interface{} {
 	id := ctx.Id().GetText()
 	variable := e.currentScope.FindVariable(id)
 	if variable == VOID {
-		fmt.Printf("Error: Variable '%s' no definida.\n", id)
-		return INVALID
+		str := e.currentScope.findVarStruct(id)
+		if str != nil {
+			fmt.Println("struct")
+			return &SwiftValue{id}
+		} else {
+			fmt.Printf("Error: Variable '%s' no definida.\n", id)
+			return INVALID
+		}
+	} else {
+		return variable
 	}
-	return variable
 }
 
 func (e *VisitorEvalue) VisitCountExpression(ctx *parser.CountExpressionContext) interface{} {
@@ -23,6 +61,32 @@ func (e *VisitorEvalue) VisitCountExpression(ctx *parser.CountExpressionContext)
 	cont := e.currentScope.FindVector(id)
 	tam := len(cont.datos)
 	return &SwiftValue{tam}
+}
+
+func (e *VisitorEvalue) VisitConcatenarExpression(ctx *parser.ConcatenarExpressionContext) interface{} {
+	out := ""
+	for _, expre := range ctx.AllExpression() {
+		visit := e.Visit(expre).(*SwiftValue)
+		if len(out) > 1 {
+			out = out + " " + fmt.Sprintf("%v", visit.value)
+		} else {
+			out = fmt.Sprintf("%v", visit.value)
+		}
+	}
+	return &SwiftValue{out}
+}
+
+func (e *VisitorEvalue) VisitFuncionNot(ctx *parser.FuncionNotContext) interface{} {
+	value := e.Visit(ctx.Expression()).(*SwiftValue)
+	nuevoVal := false
+	if value.isBool() {
+		if value.asBool() {
+			nuevoVal = false
+		} else {
+			nuevoVal = true
+		}
+	}
+	return &SwiftValue{nuevoVal}
 }
 
 func (e *VisitorEvalue) VisitEmptyVecExpression(ctx *parser.EmptyVecExpressionContext) interface{} {
@@ -38,12 +102,7 @@ func (e *VisitorEvalue) VisitEmptyVecExpression(ctx *parser.EmptyVecExpressionCo
 	return &SwiftValue{ret}
 }
 
-func (e *VisitorEvalue) VisitEnteroExpression(ctx *parser.EnteroExpressionContext) interface{} {
-	numero, _ := strconv.Atoi(ctx.GetText())
-	return &SwiftValue{numero}
-}
-
-func (e *VisitorEvalue) VisitFloatExpression(ctx *parser.FloatExpressionContext) interface{} {
+func (e *VisitorEvalue) VisitNumberExpression(ctx *parser.NumberExpressionContext) interface{} {
 	numero, _ := strconv.ParseFloat(ctx.GetText(), 64)
 	return &SwiftValue{numero}
 }
@@ -92,15 +151,7 @@ func (e *VisitorEvalue) VisitExpressionMultDivMod(ctx *parser.ExpressionMultDivM
 
 func (e *VisitorEvalue) suma(left *SwiftValue, right *SwiftValue) interface{} {
 	var er = true
-	if left.isDouble() && right.isDouble() {
-		er = false
-		return &SwiftValue{left.asDouble() + right.asDouble()}
-	}
-	if left.isInt() && right.isInt() {
-		er = false
-		return &SwiftValue{left.asInt() + right.asInt()}
-	}
-	if left.isDouble() && right.isInt() {
+	if left.isNumber() && right.isNumber() {
 		er = false
 		return &SwiftValue{left.asDouble() + right.asDouble()}
 	}
@@ -115,15 +166,7 @@ func (e *VisitorEvalue) suma(left *SwiftValue, right *SwiftValue) interface{} {
 }
 
 func (e *VisitorEvalue) resta(left *SwiftValue, right *SwiftValue) interface{} {
-	var dataReturn *SwiftValue
-	if left.isInt() && right.isDouble() {
-		fmt.Println("error")
-	} else if left.isInt() && right.isInt() {
-		dataReturn = &SwiftValue{left.asInt() - right.asInt()}
-	} else if left.isDouble() && right.isInt() {
-		dataReturn = &SwiftValue{left.asDouble() - right.asDouble()}
-	}
-	return dataReturn
+	return &SwiftValue{left.asDouble() - right.asDouble()}
 }
 
 func (e *VisitorEvalue) mult(left *SwiftValue, right *SwiftValue) interface{} {
@@ -241,4 +284,25 @@ func (e *VisitorEvalue) VisitFuncionEqExp(ctx *parser.FuncionEqExpContext) inter
 		return &SwiftValue{value: !left.equals(right)}
 	}
 	return NULL
+}
+
+func (e *VisitorEvalue) VisitFuncionAndExp(ctx *parser.FuncionAndExpContext) interface{} {
+	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	return &SwiftValue{left.asBool() && right.asBool()}
+}
+
+func (e *VisitorEvalue) VisitFuncionOrExp(ctx *parser.FuncionOrExpContext) interface{} {
+	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	return &SwiftValue{left.asBool() || right.asBool()}
+}
+
+func (e *VisitorEvalue) VisitFuncionTernaryExp(ctx *parser.FuncionTernaryExpContext) interface{} {
+	condition := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	if condition.asBool() {
+		return e.Visit(ctx.Expression(1)).(*SwiftValue)
+	} else {
+		return e.Visit(ctx.Expression(2)).(*SwiftValue)
+	}
 }
