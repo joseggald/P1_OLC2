@@ -8,7 +8,7 @@ struct Ciudad{
 }
 struct Estudiante{
 	var carnet:Int
-    let uni = "USAC"
+    let uni = "USAC"    
     var person:Persona
     var region:Ciudad
 }

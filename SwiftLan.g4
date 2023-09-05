@@ -33,10 +33,11 @@ statement:
 ;
 
 //Declaracion varaibles, vectores, matrices,funciones y structs.
-asignacion: op=(Let|Var) tiposId '=' structAsig # funcionAsigStruct
+asignacion: tipoInit tiposId '=' structAsig # funcionAsigStruct
 	| op=(Let|Var) tiposId ':' tiposAsign '=' expression # funcionAsigTipoExp
 	| op=(Let|Var) tiposId  ':' tiposAsign '?' # funcionAsigTipoNil
-	| op=(Let|Var) tiposId  '=' expression 	# funcionAsigExp;
+	| op=(Let|Var) tiposId  '=' expression 	# funcionAsigExp
+;
 
 matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla ']' 			# FuncionAsignarMatrizNormal
 |	Var Id ':' '[' '[''['  tiposAsign ']' ']' ']' '=' '[' ( '[' exprListMatrixDecla ']' )* ']' 	# FuncionAsignarMatriz3D
@@ -66,8 +67,8 @@ tiposAsign:
 	| StringDecla
 	| BoolDecla
 	| CharDecla
+	| IdMayus
 ;
-
 
 //Llamada de funciones
 callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
@@ -129,8 +130,7 @@ guardstmt: GUARD expression ELSE '{' sentencias '}';
 
 //Funciones de retorno o queibre
 retStmt: RETURN expression # FuncionReturnVal
-| RETURN  # FuncionReturnVoid
-| RETURN  structAsig # FuncionReturnStruct;
+| RETURN  # FuncionReturnVoid;
 breakstmt: BREAK # FuncionBreak;
 continuestmt: CONTINUE # FuncionContinue;
 

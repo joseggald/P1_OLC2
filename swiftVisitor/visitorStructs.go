@@ -16,6 +16,7 @@ type ExpStruct struct {
 	tipoVariable *SwiftValue
 }
 
+
 func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContext) interface{} {
 	id := ctx.IdMayus().GetText()
 	var funcs []*FunctionStruct
@@ -70,7 +71,7 @@ func (e *VisitorEvalue) VisitFuncionAtributosListExp(ctx *parser.FuncionAtributo
 	default:
 		return NULL
 	}
-	if dato.isInt() {
+	if dato.isNumber() {
 		tipo = "Int"
 	} else if dato.isString() {
 		if dato.isChar() {
@@ -112,7 +113,7 @@ func (e *VisitorEvalue) VisitListAtibStruct(ctx *parser.ListAtibStructContext) i
 		} else if data.tipoVariable != nil {
 			argValue := data.tipoVariable
 			tipos := ""
-			if argValue.isInt() {
+			if argValue.isNumber() {
 				tipos = "Int"
 			} else if argValue.isString() {
 				if argValue.isChar() {
