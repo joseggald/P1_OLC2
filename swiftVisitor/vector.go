@@ -25,3 +25,7 @@ func (v *Vector) RemoveAt(index int) {
 func (v *Vector) apendVec(value *SwiftValue) {
     v.datos = append(v.datos,value)
 }
+
+func (v *Vector) setearDatos(value []*SwiftValue) {
+    v.datos = value
+}

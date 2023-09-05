@@ -39,6 +39,12 @@ func (e *VisitorEvalue) VisitExpressionExpression(ctx *parser.ExpressionExpressi
 	return val.(*SwiftValue)
 }
 
+func (e *VisitorEvalue) VisitCallArray(ctx *parser.CallArrayContext) interface{} {
+	fmt.Printf("Enter - call array\n")
+	val := ctx.TiposId().GetText()
+	return &SwiftValue{val}
+}
+
 func (e *VisitorEvalue) VisitIdExpression(ctx *parser.IdExpressionContext) interface{} {
 	id := ctx.Id().GetText()
 	variable := e.currentScope.FindVariable(id)

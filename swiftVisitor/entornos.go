@@ -135,6 +135,33 @@ func (s *Scope) AddVector(name string, dato *SwiftValue, tipo string) {
 	}
 }
 
+func (s *Scope) setVector(name string, value []*SwiftValue) {
+	cont, exists := s.vectores[name]
+	if exists {
+		cont.setearDatos(value)
+	} else if s.parent != nil {
+		s.parent.setVector(name,value)
+	}
+}
+
+func (s *Scope) setMatriz(name string, value *Matrix) {
+	cont, exists := s.matrices[name]
+	if exists {
+		cont.setearDatos(value)
+	} else if s.parent != nil {
+		s.parent.setMatriz(name,value)
+	}
+}
+
+func (s *Scope) setMatriz3D(name string, value *Matrix3D) {
+	cont, exists := s.matrices3D[name]
+	if exists {
+		cont.setearDatos(value)
+	} else if s.parent != nil {
+		s.parent.setMatriz3D(name,value)
+	}
+}
+
 func (s *Scope) DelVector(name string, pos int) {
 	cont, exists := s.vectores[name]
 	if exists {

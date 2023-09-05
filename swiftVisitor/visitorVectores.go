@@ -40,15 +40,13 @@ func (e *VisitorEvalue) VisitFuncionRemoveVec(ctx *parser.FuncionRemoveVecContex
 }
 
 func (e *VisitorEvalue) VisitFuncionAppendVector(ctx *parser.FuncionAppendVectorContext) interface{} {
-	var id string
-	id = ctx.TiposId().GetText()
+	
+	id := ctx.TiposId().GetText()
 	cont := e.currentScope.FindVector(id)
 	val := e.Visit(ctx.Expression()).(*SwiftValue)
 	if cont != nil {
-		if val.isInt() {
+		if val.isNumber() {
 			e.currentScope.AddVector(id, val, "Int")
-		} else if val.isDouble() {
-			e.currentScope.AddVector(id, val, "Float")
 		} else if val.isString() {
 			e.currentScope.AddVector(id, val, "String")
 		} else if val.isBool() {

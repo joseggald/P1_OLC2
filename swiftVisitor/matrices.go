@@ -54,45 +54,15 @@ func (m *Matrix) SetValuesFromList(data []*SwiftValue) {
 	for i := 0; i < m.rows; i++ {
 		for j := 0; j < m.cols; j++ {
 			if index < len(data) {
-				if data[index].isInt(){
-					if m.tipo=="Int"{
-						m.SetValue(i, j, data[index])
-						index++
-					}else{
-						fmt.Println("error de dataje")
-					}
-				}else if data[index].isString(){
-					if m.tipo=="String"{
-						m.SetValue(i, j, data[index])
-						index++
-					}else{
-						fmt.Println("error de dataje")
-					}
-				}else if data[index].isBool(){
-					if m.tipo=="Bool"{
-						m.SetValue(i, j, data[index])
-						index++
-					}else{
-						fmt.Println("error de dataje")
-					}
-				}else if data[index].isChar(){
-					if m.tipo=="Char"{
-						m.SetValue(i, j, data[index])
-						index++
-					}else{
-						fmt.Println("error de dataje")
-					}
-				}else if data[index].isDouble(){
-					if m.tipo=="Float"{
-						m.SetValue(i, j, data[index])
-						index++
-					}else{
-						fmt.Println("error de dataje")
-					}
-				}
+				m.SetValue(i, j, data[index])
+				index++
 			} else {
 				return
 			}
 		}
 	}
+}
+
+func (m *Matrix) setearDatos(data *Matrix) {
+	m=data
 }

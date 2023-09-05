@@ -54,7 +54,6 @@ vectorAsign: Var tiposId ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # Func
 funcstmt: FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '->' tiposAsign '{' sentencias '}' # FuncionDeclaFunc
 	| FUNC Id '(' (exprListFunc|exprListFuncBajo)? ')' '{' sentencias '}' # FuncionDeclaFunc2;
 
-
 //Manejo de Variables
 reasignacion: tiposId '=' expression # FuncionReasign;
 incremento: tiposId '+''=' expression # FuncionIncremento;
@@ -75,10 +74,15 @@ callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
 | Id '(' (exprVector)? ')' # FuncionCallFunc2
 ;
 
+
 //Lista expresiones
 exprListStruct: tiposId ':' expr_struct ( ',' tiposId ':' expr_struct )* # listAtibStruct;
-exprListFunc: tiposId tiposId ':' tiposAsign ( ',' tiposId tiposId ':' tiposAsign)*;
-exprListFuncBajo: '_' tiposId ':' tiposAsign ( ',' '_' tiposId ':' tiposAsign)*;
+exprListFunc: dataFuncTipo (','dataFuncTipo)*	# listaFuncConTipo; 
+dataFuncTipo:tiposId tiposId ':'(INOUT)? expr_llave? tiposAsign expr_llave2? # FuncionDataFuncTipo;
+exprListFuncBajo: dataFuncBajo (',' dataFuncBajo)*	# listaFuncConBarra;
+dataFuncBajo:'_' tiposId ':'(INOUT)? expr_llave? tiposAsign expr_llave2? # FuncionDataFuncBajo;
+expr_llave:('[')*;
+expr_llave2:(']')*;
 exprListMatrixDecla: '[' exprVector ']' (',' '[' exprVector ']')* 	# exprListMatrix;
 exprListCallFunc: tiposId ':' expression ( ',' tiposId ':' expression )* ;
 exprVector: expression ( ',' expression )*;
@@ -165,6 +169,8 @@ expression: '!' expression										# funcionNot
 	| tiposId '[' expression ']' '[' expression ']' '[' expression ']'	# matriz3DCallExpression
 	| tiposId ('.' tiposId)+								# callVarStructExpression
 	| tiposAsign '(' expression ')'										# funcionesEmbeExpression
+	| '&'tiposId											# callArray
+	| '&'tiposId '[' expression ']'	'[' expression ']'		# callMatriz
 ;
 
 //Reservadas
@@ -178,6 +184,7 @@ StringDecla: 'String';
 CharDecla: 'Character'; 
 IF:'if';
 FUNC:'func';
+INOUT:'inout';
 STRUCT:'struct';
 RETURN:'return';
 ELSE:'else';

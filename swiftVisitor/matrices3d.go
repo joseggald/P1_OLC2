@@ -71,3 +71,15 @@ func (m *Matrix3D) Print() {
 		fmt.Println()
 	}
 }
+
+func (m *Matrix3D) setearDatos(data *Matrix3D) {
+	m=data
+}
+
+func (m *Matrix3D) GetSubMatrixAt(row, col int) []*SwiftValue{
+	if row >= 0 && row < m.rows && col >= 0 && col < m.cols {
+		return m.data[row][col]
+	}
+	fmt.Println("Fila o columna fuera de rango")
+	return nil
+}
