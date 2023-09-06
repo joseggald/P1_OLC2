@@ -5,7 +5,65 @@ import (
 	"modulo/parser"
 	"strconv"
 )
+func (e *VisitorEvalue) VisitVecStrCallExpression(ctx *parser.VecStrCallExpressionContext) interface{} {
+	id:=ctx.TiposId(0).GetText()
+	idVar:=ctx.TiposId(1).GetText()
+	pos:=e.Visit(ctx.Expression()).(*SwiftValue)
+	dato:=e.globalScope.findFuncVecStr(id,pos.asInt(),idVar)
+	return dato
+}
+func (e *VisitorEvalue) VisitFuncionVectorAsigVarStruct(ctx *parser.FuncionVectorAsigVarStructContext) interface{} {
+	id:=ctx.TiposId().GetText()
+	var strc []*Struct
+	a:=NewVectorStruct(strc)
+	e.currentScope.DeclareVectorStruct(id,a)
+	return VOID
+}
+func (e *VisitorEvalue) VisitFuncionAppendVectorStr(ctx *parser.FuncionAppendVectorStrContext) interface{} {
+	
+	name:=ctx.TiposId().GetText()
+	var variables []*AtributoVariable
+	var funcs []*FunctionStruct
+	var varsStruct []*Struct
+	dataStruct := e.Visit(ctx.StructAsig()).(returnStruct)
+	structCont:=e.currentScope.findStruct(dataStruct.name)
+	
+	for _,vars:=range dataStruct.variables{
+		for _,varsS:=range structCont.variables{
+			if !varsS.constante{
+				if vars.name == varsS.name{
+					if vars.tipo == varsS.tipo{
+						datoVar:=NewAtributoVariable(vars.dato,vars.tipo,vars.constante)
+						datoVar.name=vars.name
+						variables = append(variables, datoVar)
+					}
+				}
+			}
+		}
+	}
+	for _,vars:=range dataStruct.structs{
+		varsStruct = append(varsStruct, vars)
+	}
 
+	for _,vars:=range structCont.funciones{
+		vars.funcion.name=name
+		funcs = append(funcs, vars)
+	}
+	for _,vars:=range structCont.variables{
+		if vars.constante || vars.setdata {
+			variables = append(variables, vars)
+		}
+	}
+	for _,vars:=range structCont.structs{
+		if vars.constante {
+			varsStruct = append(varsStruct, vars)
+			
+		}
+	}
+	result:=NewStruct(funcs,variables,varsStruct)
+	e.currentScope.AddVectorStr(name,result)
+	return VOID
+}
 func (e *VisitorEvalue) VisitFuncionVectorAsig(ctx *parser.FuncionVectorAsigContext) interface{} {
 	fmt.Printf("Enter - Vector Statement\n")
 	name := ctx.TiposId().GetText()
@@ -153,7 +211,3 @@ func getValueType(value string) string {
 	return "String"
 }
 
-func (e *VisitorEvalue) VisitFuncionVectorAsigVarStruct(ctx *parser.FuncionVectorAsigVarStructContext) interface{} {
-
-	return VOID
-}

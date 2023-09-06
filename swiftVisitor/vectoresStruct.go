@@ -10,3 +10,6 @@ func NewVectorStruct(structs []*Struct) *VectorStruct {
 		structs:      structs,
 	}
 }
+func (v *VectorStruct) apendVec(value *Struct) {
+    v.structs = append(v.structs,value)
+}

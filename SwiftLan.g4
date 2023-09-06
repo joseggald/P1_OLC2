@@ -112,7 +112,8 @@ vecReasig: tiposId'[' expression ']' '=' expression # FuncionVecReasig;
 
 removeLastVec:tiposId'.' REMOVELAST '('')' # FuncionRemoveLastVec;
 
-appendVec: tiposId '.'APEND '('expression')' # FuncionAppendVector;
+appendVec: tiposId '.' APEND '('expression')' # FuncionAppendVector
+| tiposId '.' APEND '('structAsig')' # FuncionAppendVectorStr;
 
 //Struct
 structAsig: IdMayus '(' (exprListStruct) ')'						# defStructExpression;
@@ -183,6 +184,7 @@ expression: '!' expression										# funcionNot
 	| '&'tiposId											# callArray
 	| '&'tiposId '[' expression ']'	'[' expression ']'		# callMatriz
 	| SELF '.' tiposId 										# callSelfExp
+	| tiposId '[' expression ']''.' tiposId								 	# vecStrCallExpression
 ;
 
 //Reservadas

@@ -14,6 +14,7 @@ type Scope struct {
 	matrices3D         map[string]*Matrix3D
 	structs            map[string]*Struct
 	varsStruct         map[string]*Struct
+	vectorStruct       map[string]*VectorStruct
 }
 
 func NewScope() *Scope {
@@ -27,6 +28,7 @@ func NewScope() *Scope {
 		matrices3D:         map[string]*Matrix3D{},
 		structs:            map[string]*Struct{},
 		varsStruct:         map[string]*Struct{},
+		vectorStruct:       map[string]*VectorStruct{},
 	}
 }
 
@@ -402,4 +404,38 @@ func (s *Scope) decreVarStruct(name string, value *SwiftValue, atributo string) 
 	} else if s.parent != nil {
 		s.parent.decreVarStruct(name, value, atributo)
 	}
+}
+
+func (s *Scope) DeclareVectorStruct(name string, value *VectorStruct) {
+	_, exists := s.vectorStruct[name]
+	if exists {
+		fmt.Println("error")
+	} else {
+		s.vectorStruct[name] = value
+	}
+}
+
+func (s *Scope) AddVectorStr(name string, dato *Struct) {
+	cont, exists := s.vectorStruct[name]
+	if exists {
+		cont.apendVec(dato)
+	} else if s.parent != nil {
+		s.parent.AddVectorStr(name, dato)
+	}
+}
+
+func (s *Scope) findFuncVecStr(name string, pos int,nameVar string) *SwiftValue {
+	cont, exists := s.vectorStruct[name]
+	if exists {
+		for _,vars:= range cont.structs[pos].variables{
+			fmt.Println(vars.name)
+			fmt.Println(nameVar)
+			if vars.name == nameVar{
+				return vars.dato
+			}
+		}
+	} else if s.parent != nil {
+		s.parent.findFuncVecStr(name, pos,nameVar)
+	}
+	return nil
 }
