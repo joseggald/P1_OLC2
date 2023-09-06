@@ -85,6 +85,7 @@ func (e *VisitorEvalue) VisitFuncionAtributosListExp(ctx *parser.FuncionAtributo
 		tipo = "Float"
 	}
 	returndato := NewAtributoVariable(dato, tipo, consta)
+	returndato.setdata = true
 	returndato.name = id
 	return returndato
 }

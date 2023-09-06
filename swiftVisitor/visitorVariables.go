@@ -225,9 +225,11 @@ func (e *VisitorEvalue) VisitFuncionAsigStruct(ctx *parser.FuncionAsigStructCont
 	for _,vars:=range dataStruct.structs{
 		varsStruct = append(varsStruct, vars)
 	}
-
+	for _,vars:=range structCont.funciones{
+		funcs = append(funcs, vars)
+	}
 	for _,vars:=range structCont.variables{
-		if vars.constante {
+		if vars.constante || vars.setdata {
 			variables = append(variables, vars)
 		}
 	}

@@ -5,6 +5,7 @@ type AtributoVariable struct {
 	dato *SwiftValue
 	tipo   string
 	constante bool
+	setdata   bool
 }
 
 func NewAtributoVariable(value *SwiftValue,tipo string,constante bool) *AtributoVariable {

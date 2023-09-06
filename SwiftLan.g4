@@ -45,7 +45,7 @@ matrizAsign: Var Id ':' '[' '[' tiposAsign ']' ']' '=' '[' exprListMatrixDecla '
 '[' tiposAsign ']' ']' '(' REPEATING ':' '[' tiposAsign ']' ',' '(' REPEATING ':' expression ',' COUNT ':' 
 expression ')' ','  COUNT ':' expression')' ',' COUNT ':' expression ')'  # FuncionAsignarM3D;
 
-defStruct: STRUCT IdMayus '{' (atributosLista| atributosLista2)*  '}' # FuncionDefStruct;
+defStruct: STRUCT IdMayus '{' (atributosLista| atributosLista2)* (funcStructs)* '}' # FuncionDefStruct;
 
 vectorAsign: Var tiposId ':' '[' tiposAsign ']' '=' '[' (exprVector)? ']' # FuncionVectorAsig
 	| Var tiposId ':' '[' tiposAsign ']' '=' tiposId # FuncionVectorAsigVar
@@ -74,7 +74,9 @@ tiposAsign:
 callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
 | Id '(' (exprVector)? ')' # FuncionCallFunc2
 ;
-
+funcStructs: FUNC tiposId '('')' '{' sentencias '}' 	# FuncionCrearFunc
+| MUTANT FUNC tiposId '('')' '{' sentencias '}'			# FuncionCrearFuncMut
+;
 
 //Lista expresiones
 exprListStruct: tiposId ':' expr_struct ( ',' tiposId ':' expr_struct )* # listAtibStruct;
@@ -203,7 +205,7 @@ AT:'at';
 RANGE: '...';
 CONTINUE:'continue';
 REPEATING:'repeating';
-
+MUTANT:'mutating';
 //Valores
 BoolVal: 'true' | 'false';
 Number: Int ( '.' Digit*)?;
