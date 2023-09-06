@@ -12,6 +12,7 @@ type Param struct {
 }
 
 type Function struct {
+	name	string
 	params    []*Param
 	body      antlr.ParserRuleContext
 	tipo	string
@@ -47,6 +48,11 @@ func (f *Function) invoke(scope *Scope, args []*Argumento) interface{}{
 	}
 
 	evalVisitor := &VisitorEvalue{currentScope: childScope, globalScope: scope}
+	
+	if len(f.name)>1{
+		evalVisitor.funcsname=f.name
+	}
+	
 	evalVisitor.Visit(f.body)
 	for i, arg := range args {
 		if f.params[i].array=="v"{

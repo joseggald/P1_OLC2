@@ -30,6 +30,8 @@ statement:
 	| reasigMatriz
 	| defStruct
 	| structObj
+	| callFuncStruct
+	| reasigVarStruct
 ;
 
 //Declaracion varaibles, vectores, matrices,funciones y structs.
@@ -74,6 +76,13 @@ tiposAsign:
 callFuncstmt: Id '(' (exprListCallFunc)? ')' # FuncionCallFunc
 | Id '(' (exprVector)? ')' # FuncionCallFunc2
 ;
+callFuncStruct: tiposId '.' tiposId'('')' # FuncionCallFuncStrcut;
+reasigVarStruct: SELF '.' tiposId tipoIgual expression	# FuncionSelfReasig;
+tipoIgual:'='
+|'+''='
+|'-''='
+;
+
 funcStructs: FUNC tiposId '('')' '{' sentencias '}' 	# FuncionCrearFunc
 | MUTANT FUNC tiposId '('')' '{' sentencias '}'			# FuncionCrearFuncMut
 ;
@@ -173,6 +182,7 @@ expression: '!' expression										# funcionNot
 	| tiposAsign '(' expression ')'										# funcionesEmbeExpression
 	| '&'tiposId											# callArray
 	| '&'tiposId '[' expression ']'	'[' expression ']'		# callMatriz
+	| SELF '.' tiposId 										# callSelfExp
 ;
 
 //Reservadas
@@ -206,6 +216,7 @@ RANGE: '...';
 CONTINUE:'continue';
 REPEATING:'repeating';
 MUTANT:'mutating';
+SELF:'self';
 //Valores
 BoolVal: 'true' | 'false';
 Number: Int ( '.' Digit*)?;

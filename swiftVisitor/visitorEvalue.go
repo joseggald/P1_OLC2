@@ -17,6 +17,7 @@ type VisitorEvalue struct {
 	returnVoid     bool
 	returnBreak    bool
 	returnContinue bool
+	funcsname string
 }
 
 func OutData() string {

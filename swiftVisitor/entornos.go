@@ -37,7 +37,6 @@ func (s *Scope) CreateChildScope() *Scope {
 }
 
 func (s *Scope) DeclareVariable(name string, value *SwiftValue, tipo string, constante bool) {
-
 	if value.isNumber() {
 		if tipo == "Int" || tipo == "Float" {
 			s.variables[name] = value
@@ -310,7 +309,6 @@ func (s *Scope) reasigVarStruct(name string, value *SwiftValue, atributo string)
 	if exists {
 		for _, index := range s.varsStruct[name].variables {
 			if index.name == atributo {
-				fmt.Println("llego2")
 				index.dato = value
 			}
 		}
@@ -348,4 +346,60 @@ func (s *Scope) verifyStructVar(name string, atributo string) *Struct {
 		s.parent.verifyStructVar(name, atributo)
 	}
 	return nil
+}
+
+func (s *Scope) findFunctionStruct(name string, nameFunc string) *Function {
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].funciones {
+			if index.name == nameFunc {
+				return index.funcion
+			}
+		}
+	} else if s.parent != nil {
+		s.parent.findFunctionStruct(name, nameFunc)
+	}
+	return nil
+}
+
+func (s *Scope) findSelfVar(name string, nameVar string) *SwiftValue {
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].variables {
+			if index.name == nameVar {
+				return index.dato
+			}
+		}
+	} else if s.parent != nil {
+		s.parent.findSelfVar(name, nameVar)
+	}
+	return nil
+}
+
+func (s *Scope) increVarStruct(name string, value *SwiftValue, atributo string) {
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].variables {
+			if index.name == atributo {
+				data:=value.asInt()+index.dato.asInt()
+				index.dato=&SwiftValue{data} 
+			}
+		}
+	} else if s.parent != nil {
+		s.parent.increVarStruct(name, value, atributo)
+	}
+}
+
+func (s *Scope) decreVarStruct(name string, value *SwiftValue, atributo string) {
+	_, exists := s.varsStruct[name]
+	if exists {
+		for _, index := range s.varsStruct[name].variables {
+			if index.name == atributo {
+				data:=index.dato.asInt()-value.asInt()
+				index.dato=&SwiftValue{data} 
+			}
+		}
+	} else if s.parent != nil {
+		s.parent.decreVarStruct(name, value, atributo)
+	}
 }

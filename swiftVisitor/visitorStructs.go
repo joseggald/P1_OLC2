@@ -31,6 +31,10 @@ func (e *VisitorEvalue) VisitFuncionDefStruct(ctx *parser.FuncionDefStructContex
 		varsStruct = append(varsStruct, argValue)
 		fmt.Println(argValue.nameVar)
 	}
+	for _, index := range ctx.AllFuncStructs() {
+		argValue := e.Visit(index).(*FunctionStruct)
+		funcs = append(funcs, argValue)
+	}
 	dataStruct := NewStruct(funcs, variables, varsStruct)
 	e.globalScope.DeclareStruct(id, dataStruct)
 
@@ -234,4 +238,50 @@ func (e *VisitorEvalue) VisitFuncionAtributosStruct(ctx *parser.FuncionAtributos
 	}
 	result.constante = consta
 	return result
+}
+
+func (e *VisitorEvalue) VisitFuncionCrearFunc(ctx *parser.FuncionCrearFuncContext) interface{} {
+	id:=ctx.TiposId().GetText()
+	body:=ctx.Sentencias()
+	funcion:=NewFunction(nil,body,nil,"")
+	dataret:=NewFunctionStruct(funcion,false,id)
+	return dataret
+}
+
+func (e *VisitorEvalue) VisitFuncionCrearFuncMut(ctx *parser.FuncionCrearFuncMutContext) interface{} {
+	id:=ctx.TiposId().GetText()
+	body:=ctx.Sentencias()
+	funcion:=NewFunction(nil,body,nil,"")
+	dataret:=NewFunctionStruct(funcion,false,id)
+	return dataret
+}
+
+func (e *VisitorEvalue) VisitFuncionCallFuncStrcut(ctx *parser.FuncionCallFuncStrcutContext) interface{} {
+	id:=ctx.TiposId(0).GetText()
+	idFunc:=ctx.TiposId(1).GetText()
+	data:=e.currentScope.findFunctionStruct(id,idFunc)
+	data.invoke(e.currentScope,nil)
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitFuncionSelfReasig(ctx *parser.FuncionSelfReasigContext) interface{} {
+	id:=ctx.TiposId().GetText()
+	tipoIgual:=ctx.TipoIgual().GetText()
+	value:=e.Visit(ctx.Expression()).(*SwiftValue)
+	if tipoIgual=="="{
+		e.currentScope.reasigVarStruct(e.funcsname,value,id)
+	}else if tipoIgual=="+="{
+		e.currentScope.increVarStruct(e.funcsname,value,id)
+	}else if tipoIgual=="-="{
+		e.currentScope.decreVarStruct(e.funcsname,value,id)
+	}
+	
+	
+	return VOID
+}
+
+func (e *VisitorEvalue) VisitCallSelfExp(ctx *parser.CallSelfExpContext) interface{} {
+	id:=ctx.TiposId().GetText()
+	dao:=e.globalScope.findSelfVar(e.funcsname,id)	
+	return &SwiftValue{dao}
 }
