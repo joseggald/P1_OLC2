@@ -149,6 +149,12 @@ func (e *VisitorEvalue) VisitRetornoExpStruct(ctx *parser.RetornoExpStructContex
 	if ctx.Expression() != nil {
 		// Si se encuentra una expresión, visitarla y obtener su valor
 		datoVar := e.Visit(ctx.Expression()).(*SwiftValue)
+		defer func() {
+			if r := recover(); r != nil {
+				cont = cont + 1
+				errores.AddError(cont, "error semantico: al recibir la expresion para struct", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+			}
+		}()
 		fmt.Println("Expresión encontrada")
 		return ExpStruct{
 			tipoVariable: datoVar,
@@ -165,7 +171,8 @@ func (e *VisitorEvalue) VisitRetornoExpStruct(ctx *parser.RetornoExpStructContex
 			tipoStruct:   retStruct,
 		}
 	} else {
-		// Manejar otro caso si es necesario
+		cont = cont + 1
+		errores.AddError(cont, "error semantico: parametros de struct no validos", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
 		return nil // Otra opción, dependiendo de tus necesidades
 	}
 }
@@ -205,6 +212,12 @@ func (e *VisitorEvalue) VisitFuncionReasigObj(ctx *parser.FuncionReasigObjContex
 	atrib := ctx.TiposId(1).GetText()
 	contenido := e.currentScope.findVarStruct(id)
 	value := e.Visit(ctx.Expression()).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al recibir la expresion para struct", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	contenido2 := e.currentScope.verifyStructVar(id, atrib)
 	if contenido != nil {
 		if contenido2 == nil {
@@ -275,7 +288,6 @@ func (e *VisitorEvalue) VisitFuncionSelfReasig(ctx *parser.FuncionSelfReasigCont
 	}else if tipoIgual=="-="{
 		e.currentScope.decreVarStruct(e.funcsname,value,id)
 	}
-	
 	
 	return VOID
 }

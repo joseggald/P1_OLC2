@@ -11,6 +11,12 @@ import (
 func (e *VisitorEvalue) VisitFuncionesEmbeExpression(ctx *parser.FuncionesEmbeExpressionContext) interface{} {
 	tipo := ctx.TiposAsign().GetText()
 	data := e.Visit(ctx.Expression()).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al recibir la expresion a convertir", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	if tipo == "Int" {
 		if data.isString() {
 			num, _ := strconv.Atoi(data.asString())
@@ -18,19 +24,31 @@ func (e *VisitorEvalue) VisitFuncionesEmbeExpression(ctx *parser.FuncionesEmbeEx
 		} else if data.isDouble() {
 			intNum := int(math.Round(data.asDouble()))
 			return &SwiftValue{intNum}
+		} else {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al recibir la expresion a convertir", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+			return VOID
 		}
 	} else if tipo == "String" {
 		strNum := data.String()
 		return &SwiftValue{strNum}
-	}else if tipo == "Float" {
-		if data.isNumber(){
+	} else if tipo == "Float" {
+		if data.isNumber() {
 			return &SwiftValue{float64(data.asInt())}
-		}else if data.isString(){
+		} else if data.isString() {
 			numeroDecimal, _ := strconv.ParseFloat(data.asString(), 64)
 			return &SwiftValue{numeroDecimal}
+		} else {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al recibir la expresion a convertir", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+			return VOID
 		}
+
+	} else {
+		cont = cont + 1
+		errores.AddError(cont, "error semantico: al recibir la expresion a convertir", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		return VOID
 	}
-	return VOID
 }
 
 func (e *VisitorEvalue) VisitExpressionExpression(ctx *parser.ExpressionExpressionContext) interface{} {
@@ -84,6 +102,12 @@ func (e *VisitorEvalue) VisitConcatenarExpression(ctx *parser.ConcatenarExpressi
 
 func (e *VisitorEvalue) VisitFuncionNot(ctx *parser.FuncionNotContext) interface{} {
 	value := e.Visit(ctx.Expression()).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	nuevoVal := false
 	if value.isBool() {
 		if value.asBool() {
@@ -109,7 +133,14 @@ func (e *VisitorEvalue) VisitEmptyVecExpression(ctx *parser.EmptyVecExpressionCo
 }
 
 func (e *VisitorEvalue) VisitNumberExpression(ctx *parser.NumberExpressionContext) interface{} {
+
 	numero, _ := strconv.ParseFloat(ctx.GetText(), 64)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	return &SwiftValue{numero}
 }
 
@@ -124,12 +155,24 @@ func (e *VisitorEvalue) VisitStringExpression(ctx *parser.StringExpressionContex
 	return &SwiftValue{texto}
 }
 func (e *VisitorEvalue) VisitNilExpression(ctx *parser.NilExpressionContext) interface{} {
-	return NULL
+	return &SwiftValue{"nil"}
 }
 
 func (e *VisitorEvalue) VisitExpressionSumRes(ctx *parser.ExpressionSumResContext) interface{} {
 	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	switch ctx.GetOp().GetTokenType() {
 	case parser.SwiftLanLexerSuma:
 		return e.suma(left, right)
@@ -208,6 +251,12 @@ func (e *VisitorEvalue) mod(left *SwiftValue, right *SwiftValue) interface{} {
 
 func (e *VisitorEvalue) VisitFuncionUnariaExp(ctx *parser.FuncionUnariaExpContext) interface{} {
 	valor := e.Visit(ctx.Expression()).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	if valor.isInt() {
 		return &SwiftValue{value: -valor.asInt()}
 	}
@@ -219,13 +268,37 @@ func (e *VisitorEvalue) VisitFuncionUnariaExp(ctx *parser.FuncionUnariaExpContex
 
 func (e *VisitorEvalue) VisitFuncionPowExp(ctx *parser.FuncionPowExpContext) interface{} {
 	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	return &SwiftValue{math.Pow(left.asDouble(), right.asDouble())}
 }
 
 func (e *VisitorEvalue) VisitFuncionCompExp(ctx *parser.FuncionCompExpContext) interface{} {
 	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	switch ctx.GetOp().GetTokenType() {
 	case parser.SwiftLanLexerMenorQue:
 		return e.menorQue(left, right)
@@ -282,7 +355,19 @@ func (e *VisitorEvalue) mayorIgualQue(left *SwiftValue, right *SwiftValue) inter
 
 func (e *VisitorEvalue) VisitFuncionEqExp(ctx *parser.FuncionEqExpContext) interface{} {
 	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	switch ctx.GetOp().GetTokenType() {
 	case parser.SwiftLanLexerEquals:
 		return &SwiftValue{value: left.equals(right)}
@@ -294,18 +379,48 @@ func (e *VisitorEvalue) VisitFuncionEqExp(ctx *parser.FuncionEqExpContext) inter
 
 func (e *VisitorEvalue) VisitFuncionAndExp(ctx *parser.FuncionAndExpContext) interface{} {
 	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	return &SwiftValue{left.asBool() && right.asBool()}
 }
 
 func (e *VisitorEvalue) VisitFuncionOrExp(ctx *parser.FuncionOrExpContext) interface{} {
 	left := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	right := e.Visit(ctx.Expression(1)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	return &SwiftValue{left.asBool() || right.asBool()}
 }
 
 func (e *VisitorEvalue) VisitFuncionTernaryExp(ctx *parser.FuncionTernaryExpContext) interface{} {
 	condition := e.Visit(ctx.Expression(0)).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: expresio no valida en Ternaria", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
 	if condition.asBool() {
 		return e.Visit(ctx.Expression(1)).(*SwiftValue)
 	} else {

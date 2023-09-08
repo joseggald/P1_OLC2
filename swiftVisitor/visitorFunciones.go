@@ -7,8 +7,14 @@ import (
 )
 
 func (e *VisitorEvalue) VisitExprCalFunc(ctx *parser.ExprCalFuncContext) interface{} {
-	a := e.Visit(ctx.CallFuncstmt())
-	return a.(*SwiftValue)
+	a := e.Visit(ctx.CallFuncstmt()).(*SwiftValue)
+	defer func() {
+		if r := recover(); r != nil {
+			cont = cont + 1
+			errores.AddError(cont, "error semantico: al llamar expresion función", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+		}
+	}()
+	return a
 }
 
 func (e *VisitorEvalue) VisitListaFuncConTipo(ctx *parser.ListaFuncConTipoContext) interface{} {
@@ -222,6 +228,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc(ctx *parser.FuncionDeclaFuncContex
 	body := ctx.Sentencias()
 	function := NewFunction(params, body, nil, tipe)
 	e.currentScope.DeclareFunction(functionName, function)
+	simbolos.AddSymbol(functionName,"Matriz",tipe,entorno,ctx.GetStart().GetLine(),ctx.GetStart().GetColumn())
 	fmt.Printf("En FuncionFuncDec - Nombre Variable: %v Valor: %v\n", functionName, function.params)
 	return VOID
 }
@@ -238,6 +245,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 	body := ctx.Sentencias()
 	function := NewFunction(params, body, nil, "")
 	e.currentScope.DeclareFunction(functionName, function)
+	simbolos.AddSymbol(functionName,"Matriz","Not Tipo",entorno,ctx.GetStart().GetLine(),ctx.GetStart().GetColumn())
 	fmt.Printf("En FuncionFuncDec2 - Nombre Variable: %v Valor: %v\n", functionName, function.params)
 	return VOID
 }
@@ -245,6 +253,7 @@ func (e *VisitorEvalue) VisitFuncionDeclaFunc2(ctx *parser.FuncionDeclaFunc2Cont
 func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext) interface{} {
 	fmt.Printf("Entering VisitFuncionCallFunc\n")
 	functionName := ctx.Id().GetText()
+	entorno=functionName
 	if function := e.currentScope.FindFunction(functionName); function != nil {
 		var args []*Argumento
 		var idExt []string
@@ -338,7 +347,9 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 			}
 		}
 	} else {
-		fmt.Printf("La Función no existe: %v\n", functionName)
+		cont = cont + 1
+		errores.AddError(cont, "error semantico: no existe la función", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
+			
 	}
 	return NULL
 }
@@ -346,6 +357,7 @@ func (e *VisitorEvalue) VisitFuncionCallFunc(ctx *parser.FuncionCallFuncContext)
 func (e *VisitorEvalue) VisitFuncionCallFunc2(ctx *parser.FuncionCallFunc2Context) interface{} {
 	fmt.Printf("Entering VisitFuncionCallFunc2\n")
 	functionName := ctx.Id().GetText()
+	entorno=functionName
 	if function := e.currentScope.FindFunction(functionName); function != nil {
 		var args []*Argumento
 		if exprList := ctx.ExprVector(); exprList != nil {
@@ -448,7 +460,8 @@ func (e *VisitorEvalue) VisitFuncionCallFunc2(ctx *parser.FuncionCallFunc2Contex
 			}
 		}
 	} else {
-		fmt.Printf("La Función no existe: %v\n", functionName)
+		cont = cont + 1
+		errores.AddError(cont, "error semantico: no existe la función", entorno, ctx.GetStart().GetLine(), ctx.GetStart().GetColumn())
 	}
 
 	return NULL

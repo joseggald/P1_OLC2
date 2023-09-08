@@ -26,6 +26,7 @@ func (e *VisitorEvalue) VisitFuncionAsignarMatrizNormal(ctx *parser.FuncionAsign
 	nuevaMatriz := NewMatrix(exprMatrix.Fila, exprMatrix.Cols, tipo)
 	nuevaMatriz.SetValuesFromList(data)
 	e.currentScope.DeclareMatriz(name, nuevaMatriz)
+	simbolos.AddSymbol(name,"Matriz",tipo,entorno,ctx.GetStart().GetLine(),ctx.GetStart().GetColumn())
 	return VOID
 }
 
@@ -85,6 +86,7 @@ func (e *VisitorEvalue) VisitFuncionAsignarMatriz3D(ctx *parser.FuncionAsignarMa
 	nuevaMatriz3D.SetDataFromList(data)
 	nuevaMatriz3D.Print()
 	e.currentScope.DeclareMatriz3D(name, nuevaMatriz3D)
+	simbolos.AddSymbol(name,"Matriz",tipo,entorno,ctx.GetStart().GetLine(),ctx.GetStart().GetColumn())
 	return VOID
 }
 func (e *VisitorEvalue) VisitFuncionAsignarM3D(ctx *parser.FuncionAsignarM3DContext) interface{} {
@@ -108,6 +110,7 @@ func (e *VisitorEvalue) VisitFuncionAsignarM3D(ctx *parser.FuncionAsignarM3DCont
 		nuevaMatriz.SetDataFromList(data)
 		nuevaMatriz.Print()
 		e.currentScope.DeclareMatriz3D(name, nuevaMatriz)
+		simbolos.AddSymbol(name,"Matriz",tipo,entorno,ctx.GetStart().GetLine(),ctx.GetStart().GetColumn())
 	} else {
 		fmt.Println("error")
 	}

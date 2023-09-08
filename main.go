@@ -19,6 +19,10 @@ func Compilar(salida string) string {
 	var visitor parser.SwiftLanVisitor = swiftVisitor.NewVisitorEvalue()
 	visitor.Visit(tree)
 	salidaF := swiftVisitor.OutData()
+	errores:=swiftVisitor.OutErrors()
+	simbolos:=swiftVisitor.OutSimbolos()
+	simbolos.GenerateStyledHTMLSymbolTable("ReporteSimbolos.html")
+	errores.GenerateStyledHTMLReport("ReporteErrores.html")
 	return salidaF
 }
 

@@ -7,6 +7,7 @@ import (
 
 func (e *VisitorEvalue) VisitIfstmt(ctx *parser.IfstmtContext) interface{} {
     fmt.Printf("Entro VisitIf\n")
+    entorno="If condition"
     condition := e.Visit(ctx.Ifstat().(*parser.IfstatContext).Expression()).(*SwiftValue)
     if condition.isBool() && condition.asBool() {
         ifScope := e.currentScope.CreateChildScope()
@@ -27,7 +28,7 @@ func (e *VisitorEvalue) VisitIfstmt(ctx *parser.IfstmtContext) interface{} {
 		}
         return VOID
     }
-
+    entorno="ElseIf condition"
     for _, elseIfStat := range ctx.AllElseifstmt() {
         elseIfCondition := e.Visit(elseIfStat.(*parser.ElseifstmtContext).Expression()).(*SwiftValue)
         if elseIfCondition.isBool() && elseIfCondition.asBool() {
@@ -43,7 +44,7 @@ func (e *VisitorEvalue) VisitIfstmt(ctx *parser.IfstmtContext) interface{} {
             return VOID
         }
     }
-
+    entorno="Else condition"
     if elseContext := ctx.Elsestmt(); elseContext != nil {
         e.Visit(elseContext.Sentencias())
         if e.returnValue != nil {
@@ -56,7 +57,7 @@ func (e *VisitorEvalue) VisitIfstmt(ctx *parser.IfstmtContext) interface{} {
 
 func (e *VisitorEvalue) VisitGuardstmt(ctx *parser.GuardstmtContext) interface{} {
     fmt.Printf("Entro VisitGuard\n")
-    
+    entorno="Guard"
     condition := e.Visit(ctx.Expression()).(*SwiftValue)
     if condition.isBool(){
         if condition.asBool(){
