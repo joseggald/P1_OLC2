@@ -2,7 +2,6 @@
 ## Segundo Semestre 2023
 
 <div align="center">
-  <img src="https://unsplash.com/photos/klMii3cR9iI" alt="Compilador T-Swift" width="200" height="200"/>
   <h1 style="color: #4285F4;">Bienvenidos al Compilador T-Swift</h1>
   <p style="color: #888;">Una poderosa herramienta de desarrollo</p>
 </div>
