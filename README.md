@@ -31,6 +31,6 @@ El Compilador T-Swift es una creación única que combina la simplicidad de Swif
 Descubre cómo funciona este compilador, desde el análisis del código fuente hasta la generación de ejecutables, en nuestros manuales detallados. ¡Explora, experimenta y crea con T-Swift!
 
 <div align="center">
-  <a href="enlace-al-manual-tecnico" style="background-color: #4285F4; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Manual Técnico</a>
-  <a href="enlace-al-manual-de-usuario" style="background-color: #888; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Manual de Usuario</a>
+  <a href="https://github.com/joseggald/P1_OLC2/blob/master/Manuales/ManualTecnico.pdf" style="background-color: #4285F4; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Manual Técnico</a>
+  <a href="https://github.com/joseggald/P1_OLC2/blob/master/Manuales/ManualDeUsuario.pdf" style="background-color: #888; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Manual de Usuario</a>
 </div>
