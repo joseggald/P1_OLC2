@@ -14,9 +14,9 @@ El Compilador T-Swift es una creación única que combina la simplicidad de Swif
 
 ## 📘 Contenido Destacado
 
-- **Manual Técnico:** Si eres un amante de los detalles técnicos y quieres sumergirte en el núcleo del compilador, consulta nuestro [**Manual Técnico**](enlace-al-manual-tecnico).
+- **Manual Técnico:** Si eres un amante de los detalles técnicos y quieres sumergirte en el núcleo del compilador, consulta nuestro [**Manual Técnico**](https://github.com/joseggald/P1_OLC2/blob/master/Manuales/ManualTecnico.pdf).
 
-- **Manual de Usuario:** Si prefieres una guía amigable para los usuarios que desean aprovechar al máximo esta herramienta, explora nuestro [**Manual de Usuario**](enlace-al-manual-de-usuario).
+- **Manual de Usuario:** Si prefieres una guía amigable para los usuarios que desean aprovechar al máximo esta herramienta, explora nuestro [**Manual de Usuario**](https://github.com/joseggald/P1_OLC2/blob/master/Manuales/ManualDeUsuario.pdf).
 
 ## 🌟 Características Clave
 
